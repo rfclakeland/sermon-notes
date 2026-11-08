@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "restoration-notes",
+  "compatibility_date": "2026-11-08",
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true
+    }
+  },
+  // Preview Worker only. Do not add a routes or workers custom-domain entry.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "restoration-notes-preview",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "COVERS",
+      "bucket_name": "restoration-notes-preview-covers"
+    }
+  ]
+}

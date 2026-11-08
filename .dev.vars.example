@@ -1,0 +1,4 @@
+# Copy to .dev.vars for local Wrangler. Never commit real values.
+# Set the same names on the preview Worker with `wrangler secret put`.
+AUTH_SECRET=
+STAFF_PASSWORD=
