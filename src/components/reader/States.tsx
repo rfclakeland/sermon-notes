@@ -9,11 +9,23 @@ export function StateMessage({
   title,
   body,
   action,
+  inline = false,
 }: {
   title: string;
   body?: string;
   action?: React.ReactNode;
+  /** Inside a page that already has its own h1: render a quieter h2 block. */
+  inline?: boolean;
 }) {
+  if (inline) {
+    return (
+      <div className="state-inline" role="status">
+        <h2>{title}</h2>
+        {body ? <p>{body}</p> : null}
+        {action ? <div className="quiet-acts">{action}</div> : null}
+      </div>
+    );
+  }
   return (
     <div className="wrap">
       <header className="page-head">
@@ -25,11 +37,20 @@ export function StateMessage({
   );
 }
 
-export function LoadError({ onRetry }: { onRetry: () => void }) {
+export function LoadError({
+  onRetry,
+  inline = false,
+  body = "Check your connection and try again. A loading error doesn’t remove notes already saved in this browser; open My notes to read or download them.",
+}: {
+  onRetry: () => void;
+  inline?: boolean;
+  body?: string;
+}) {
   return (
     <StateMessage
+      inline={inline}
       title="We couldn’t load sermons"
-      body="Check your connection and try again. Any notes you’ve written are still saved on this device."
+      body={body}
       action={<Button onClick={onRetry}>Try again</Button>}
     />
   );

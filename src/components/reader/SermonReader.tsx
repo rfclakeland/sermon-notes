@@ -40,6 +40,7 @@ export function SermonReader({
 }) {
   const { draft, status, setBlank, setPersonal } = useVisitorDraft(sermon.id, {
     ephemeral: preview,
+    sermon,
   });
   const [revealed, setRevealed] = useState(false);
   const [open, setOpen] = useState<"share" | "keep" | null>(null);

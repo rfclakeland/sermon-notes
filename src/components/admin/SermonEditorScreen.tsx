@@ -456,15 +456,29 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
               </Button>
             )}
             {!isNew ? (
-              <Button variant="ghost" onClick={duplicate} disabled={saveState === "saving"}>
-                Duplicate as draft
+              <Button
+                variant="ghost"
+                className="px-3 sm:px-5"
+                onClick={duplicate}
+                disabled={saveState === "saving"}
+              >
+                Duplicate<span className="hidden sm:inline">&nbsp;as draft</span>
               </Button>
             ) : null}
-            <Button variant="outline" onClick={saveAndPreview} disabled={saveState === "saving"}>
+            <Button
+              variant="outline"
+              className="px-3 sm:px-5"
+              onClick={saveAndPreview}
+              disabled={saveState === "saving"}
+            >
               Save & preview
             </Button>
-            <Button onClick={() => save()} disabled={saveState === "saving" || (!dirty && !isNew)}>
-              Save sermon
+            <Button
+              className="px-3 sm:px-5"
+              onClick={() => save()}
+              disabled={saveState === "saving" || (!dirty && !isNew)}
+            >
+              Save<span className="hidden sm:inline">&nbsp;sermon</span>
             </Button>
           </div>
         </div>
@@ -509,7 +523,7 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
             onChange={(e) => set("title")(e.target.value)}
             placeholder="Sermon title"
             aria-label="Sermon title"
-            className="type-display block w-full resize-none overflow-hidden bg-transparent placeholder:text-muted-foreground/60 focus:outline-none focus-visible:outline-none"
+            className="type-display block w-full resize-none overflow-hidden bg-transparent rounded-sm placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
           />
           <p className="mt-3 text-[16px] text-muted-foreground">
             {[meta.speaker, meta.scripture].filter(Boolean).join(" · ") ||
@@ -531,7 +545,7 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
 
         {/* Details inspector */}
         <aside
-          className="order-first space-y-6 lg:order-none lg:sticky lg:top-[140px] lg:self-start"
+          className="space-y-6 lg:sticky lg:top-[140px] lg:self-start"
           aria-label="Sermon details"
         >
           <details open className="group surface p-5 lg:[&>summary]:pointer-events-none">

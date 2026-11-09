@@ -1,4 +1,5 @@
 import { docToPlainText, getSermonDoc } from "./delta";
+import { fillOutline, outlineBlankIds, type NoteContext } from "./note-context";
 import type { Sermon, VisitorDraft } from "./types";
 
 export const CHURCH_NAME = "Restoration Fellowship Church of Lakeland";
@@ -68,6 +69,54 @@ export function buildNotesText(sermon: Sermon, draft: VisitorDraft, revealed: bo
     CHURCH_NAME,
     "",
     body,
+    "",
+    "MY NOTES",
+    draft.personal.trim() || "(none)",
+    "",
+  ].join("\n");
+}
+
+export type OrphanReason = "removed" | "unavailable";
+
+export const ORPHAN_NOTICE: Record<OrphanReason, string> = {
+  removed: "This sermon is no longer listed. Your notes are still kept in this browser.",
+  unavailable: "Sermon details couldn’t load right now. Your notes are still kept in this browser.",
+};
+
+/** Typed answers in outline order (falls back to save order without context). */
+export function orphanAnswers(draft: VisitorDraft, context: NoteContext | null) {
+  const order = context ? outlineBlankIds(context.outline) : [];
+  const ids = [...order, ...Object.keys(draft.blanks).filter((id) => !order.includes(id))];
+  return ids.map((id) => (draft.blanks[id] ?? "").trim()).filter(Boolean);
+}
+
+/**
+ * Plain-text notes for a sermon that is no longer in the public list. Uses only
+ * what this browser kept (the visitor's draft and the saved outline context).
+ */
+export function buildOrphanNotesText(
+  draft: VisitorDraft,
+  context: NoteContext | null,
+  reason: OrphanReason = "removed",
+) {
+  const title = context?.title || "Sermon notes";
+  const meta = context
+    ? [context.date ? formatDate(context.date) : "", context.speaker, context.scripture]
+        .filter(Boolean)
+        .join(" · ")
+    : "";
+  const body = context
+    ? fillOutline(context.outline, draft.blanks)
+    : orphanAnswers(draft, null)
+        .map((answer, index) => `${index + 1}. ${answer}`)
+        .join("\n") || "(no answers)";
+  return [
+    title,
+    ...(meta ? [meta] : []),
+    CHURCH_NAME,
+    `(${ORPHAN_NOTICE[reason]})`,
+    "",
+    context ? body : `MY ANSWERS\n${body}`,
     "",
     "MY NOTES",
     draft.personal.trim() || "(none)",

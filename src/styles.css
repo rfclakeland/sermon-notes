@@ -86,9 +86,11 @@
   --destructive-foreground: #f8f4eb;
   --warning: #f3ead6;
   --warning-foreground: #7a5c24;
-  --border: #d8cfbd;
-  --input: #cfc6b4;
-  --ring: #b8924e;
+  /* ≥3:1 against background, paper and muted fills (field boundaries and rules). */
+  --border: #857b6a;
+  --input: #857b6a;
+  /* Focus ring ≥3:1 on parchment (3.66) and paper (3.92). */
+  --ring: #8f7740;
   --blank: transparent;
   --blank-line: #3a3c42;
   --revealed: #1c2b4d;

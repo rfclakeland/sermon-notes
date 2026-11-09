@@ -218,7 +218,7 @@ export function EditorToolbar({
             <DropdownMenuItem
               key={s ?? "normal"}
               className={cn(
-                "h-10 rounded-lg text-[15px]",
+                "h-11 rounded-lg text-[15px]",
                 (size ?? null) === s && "bg-accent text-accent-foreground",
               )}
               onSelect={() => c().setMark("textStyle", { size: s }).removeEmptyTextStyle().run()}
@@ -231,7 +231,7 @@ export function EditorToolbar({
           {COLORS.map((col) => (
             <DropdownMenuItem
               key={col.name}
-              className="h-10 gap-3 rounded-lg text-[15px]"
+              className="h-11 gap-3 rounded-lg text-[15px]"
               onSelect={() => (col.value ? c().setColor(col.value).run() : c().unsetColor().run())}
             >
               <span

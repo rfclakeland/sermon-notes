@@ -6,7 +6,12 @@
   --muted: #5f5b53;
   --parchment: #f2ece0;
   --paper: #f8f4eb;
-  --rule: #d8cfbd;
+  /* Rules and field boundaries: ≥3:1 on parchment (3.54), paper (3.80) and muted fills (3.17). */
+  --rule: #857b6a;
+  /* Gold dividers between outline points: ≥3:1 on parchment (3.66) and paper (3.92). */
+  --rule-gold: #8f7740;
+  /* Rules on the night header/footer: ≥3:1 on #101217. */
+  --rule-on-dark: rgba(214, 182, 121, 0.5);
   --gold: #b8924e;
   --gold-light: #d6b679;
   --gold-text: #7a5c24;
@@ -33,7 +38,8 @@
   color: inherit;
 }
 .rn :focus-visible {
-  outline: 2px solid var(--gold);
+  /* Darker gold so the ring itself is ≥3:1 on parchment and on the night header. */
+  outline: 2px solid var(--rule-gold);
   outline-offset: 3px;
 }
 .rn .wrap {
@@ -45,7 +51,7 @@
 .rn header.app {
   background: var(--night);
   color: var(--on-dark);
-  border-bottom: 1px solid rgba(214, 182, 121, 0.18);
+  border-bottom: 1px solid var(--rule-on-dark);
 }
 .rn header.app .wrap {
   display: flex;
@@ -115,7 +121,8 @@
 
 .rn .hero {
   position: relative;
-  height: clamp(440px, 66vh, 680px);
+  /* Shorter on desktop so the first blanks sit closer to the fold. */
+  height: clamp(380px, 54vh, 560px);
   background: var(--night);
   color: var(--on-dark);
   overflow: hidden;
@@ -198,7 +205,7 @@
   color: var(--gold-light);
   text-decoration: none;
   border-bottom: 1px solid rgba(214, 182, 121, 0.5);
-  min-height: 40px;
+  min-height: 44px;
   padding: 4px 0 2px;
 }
 
@@ -244,7 +251,7 @@
   border: 0;
   background: none;
   cursor: pointer;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 12px;
   font-size: 14.5px;
   font-weight: 600;
@@ -308,7 +315,7 @@
   text-align: left;
   border: 0;
   background: none;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0 10px;
   cursor: pointer;
   font-weight: 500;
@@ -352,7 +359,7 @@
 .rn .side a.read {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
   color: var(--ink);
   font-weight: 600;
   text-decoration: none;
@@ -424,10 +431,10 @@
   counter-increment: pt;
   position: relative;
   padding: 14px 0 14px 52px;
-  border-top: 1px solid rgba(184, 146, 78, 0.28);
+  border-top: 1px solid var(--rule-gold);
 }
 .rn ol.points li:last-child {
-  border-bottom: 1px solid rgba(184, 146, 78, 0.28);
+  border-bottom: 1px solid var(--rule-gold);
 }
 .rn ol.points li::before {
   content: counter(pt, upper-roman);
@@ -441,6 +448,10 @@
   letter-spacing: 0.04em;
 }
 .rn .blank {
+  /* Visible underline stays 1.45em tall; extra top padding (pulled back with a
+     negative margin) grows the tap target to 44px without changing line rhythm. */
+  --blank-h: 1.45em;
+  --blank-pad: max(0px, calc(44px - var(--blank-h)));
   display: inline-block;
   width: 10ch;
   min-width: 7ch;
@@ -448,10 +459,11 @@
   border: 0;
   border-bottom: 1px solid var(--ink-soft);
   background: transparent;
+  background-clip: content-box;
   border-radius: 0;
-  padding: 0 4px 1px;
-  margin: 0 2px;
-  height: 1.45em;
+  padding: var(--blank-pad) 4px 1px;
+  margin: calc(-1 * var(--blank-pad)) 2px 0;
+  height: calc(var(--blank-h) + var(--blank-pad));
   vertical-align: baseline;
   font-family: var(--display);
   font-style: italic;
@@ -466,7 +478,8 @@
   color: transparent;
 }
 .rn .blank:focus {
-  border-bottom: 2px solid var(--gold);
+  border-bottom: 2px solid var(--rule-gold);
+  padding-bottom: 0;
   background: rgba(184, 146, 78, 0.08);
 }
 .rn .blank.is-revealed {
@@ -507,7 +520,7 @@
   border: 0;
   background: none;
   cursor: pointer;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0;
   font-size: 13px;
   font-weight: 600;
@@ -546,7 +559,7 @@
   scroll-margin: 88px;
 }
 .rn textarea.personal:focus {
-  border-top-color: var(--gold);
+  border-top-color: var(--rule-gold);
 }
 .rn .reflections .foot {
   margin-top: 10px;
@@ -586,7 +599,7 @@
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
 }
 .rn .strip {
   display: grid;
@@ -746,7 +759,7 @@
   font-style: italic;
 }
 .rn .search:focus {
-  border-bottom: 2px solid var(--gold);
+  border-bottom: 2px solid var(--rule-gold);
 }
 .rn .filters {
   display: flex;
@@ -822,6 +835,10 @@
   aspect-ratio: 16 / 10;
   overflow: hidden;
   background: var(--night);
+}
+.rn .entry .thumb.none {
+  background: var(--paper);
+  border: 1px solid var(--rule);
 }
 .rn .entry .thumb img {
   width: 100%;
@@ -905,6 +922,70 @@
   color: var(--gold-text);
 }
 
+.rn .orphan {
+  margin-top: 12px;
+  max-width: 36rem;
+}
+.rn .orphan-note {
+  margin: 0 0 10px;
+  font-size: 14.5px;
+  color: var(--muted);
+}
+.rn .orphan-h {
+  margin: 0 0 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+.rn .orphan-answers {
+  margin: 0;
+  padding-left: 1.4em;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--navy);
+}
+.rn .orphan-outline summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 5px;
+}
+.rn .orphan-outline pre {
+  margin: 8px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--rule);
+  white-space: pre-wrap;
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.rn .state-inline {
+  padding: 18px 0 22px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+}
+.rn .state-inline h2 {
+  font-family: var(--display);
+  font-weight: 560;
+  font-size: 24px;
+  margin: 0 0 6px;
+}
+.rn .state-inline p {
+  margin: 0 0 12px;
+  color: var(--ink-soft);
+  max-width: 36rem;
+}
+
 .rn .staff-form {
   max-width: 26rem;
   padding-bottom: 40px;
@@ -927,7 +1008,7 @@
 .rn footer.app {
   background: var(--night);
   color: var(--on-dark-muted);
-  border-top: 1px solid rgba(214, 182, 121, 0.18);
+  border-top: 1px solid var(--rule-on-dark);
 }
 .rn footer.app .wrap {
   display: flex;
@@ -1086,6 +1167,9 @@
   .rn .entry {
     gap: 14px;
   }
+  .rn .entry .thumb.none {
+    display: none;
+  }
   .rn .entry .row-acts {
     grid-column: 1;
   }
@@ -1095,6 +1179,38 @@
   .rn footer.app .wrap {
     flex-direction: column;
     gap: 8px;
+  }
+}
+@media (max-width: 380px) {
+  /* Keep "Restoration Notes" on one line and the nav inside small phones. */
+  .rn header.app .wrap {
+    gap: 6px;
+    padding-left: 14px;
+    padding-right: 4px;
+  }
+  .rn .brand strong {
+    font-size: 17px;
+  }
+  .rn nav a {
+    padding: 0 7px;
+    font-size: 14px;
+  }
+  .rn nav a[aria-current="page"]::after {
+    left: 7px;
+    right: 7px;
+  }
+}
+@media (max-width: 340px) {
+  .rn .brand strong {
+    font-size: 15.5px;
+  }
+  .rn nav a {
+    padding: 0 5px;
+    font-size: 13.5px;
+  }
+  .rn nav a[aria-current="page"]::after {
+    left: 5px;
+    right: 5px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

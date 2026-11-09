@@ -6,13 +6,18 @@ import {
   saveDraft,
   storageAvailable,
 } from "@/lib/sermon/drafts";
-import type { VisitorDraft } from "@/lib/sermon/types";
+import { saveNoteContext } from "@/lib/sermon/note-context";
+import type { Sermon, VisitorDraft } from "@/lib/sermon/types";
 
 export type DraftStatus = "loading" | "idle" | "saving" | "saved" | "unavailable" | "ephemeral";
 
 /** Visitor answers + personal notes for one sermon, auto-saved on this device. */
-export function useVisitorDraft(sermonId: string, opts?: { ephemeral?: boolean }) {
+export function useVisitorDraft(sermonId: string, opts?: { ephemeral?: boolean; sermon?: Sermon }) {
   const ephemeral = !!opts?.ephemeral;
+  // Public outline context saved beside the notes so they stay readable if the
+  // sermon is later removed or unpublished. Local only — never sent anywhere.
+  const sermonRef = useRef<Sermon | undefined>(opts?.sermon);
+  sermonRef.current = opts?.sermon;
   const [draft, setDraft] = useState<VisitorDraft>(emptyDraft);
   const [status, setStatus] = useState<DraftStatus>("loading");
   const draftRef = useRef(draft);
@@ -31,7 +36,9 @@ export function useVisitorDraft(sermonId: string, opts?: { ephemeral?: boolean }
     else if (!storageAvailable()) setS("unavailable");
     else {
       d = loadDraft(sermonId);
-      setS(draftHasContent(d) ? "saved" : "idle");
+      const has = draftHasContent(d);
+      if (has && sermonRef.current) saveNoteContext(sermonRef.current);
+      setS(has ? "saved" : "idle");
     }
     draftRef.current = d;
     setDraft(d);
@@ -41,6 +48,9 @@ export function useVisitorDraft(sermonId: string, opts?: { ephemeral?: boolean }
     window.clearTimeout(timer.current);
     if (!pending.current) return;
     const ok = saveDraft(sermonId, pending.current);
+    if (ok && sermonRef.current && draftHasContent(pending.current)) {
+      saveNoteContext(sermonRef.current);
+    }
     pending.current = null;
     setS(ok ? "saved" : "unavailable");
   }, [sermonId]);

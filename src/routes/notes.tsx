@@ -5,10 +5,37 @@ import { PublicShell } from "@/components/layout/SiteHeader";
 import { LoadError } from "@/components/reader/States";
 import { getSermonDoc, listBlanks } from "@/lib/sermon/delta";
 import { draftHasContent, listDraftIds, loadDraft, storageAvailable } from "@/lib/sermon/drafts";
-import { buildNotesText, downloadText, formatDate, SAMPLE_NOTICE } from "@/lib/sermon/export";
+import {
+  buildNotesText,
+  buildOrphanNotesText,
+  downloadText,
+  formatDate,
+  ORPHAN_NOTICE,
+  orphanAnswers,
+  SAMPLE_NOTICE,
+  type OrphanReason,
+} from "@/lib/sermon/export";
+import { fillOutline, loadNoteContext, type NoteContext } from "@/lib/sermon/note-context";
 import { buildBackup, restoreBackup } from "@/lib/sermon/notes-backup";
 import { useSermons } from "@/lib/sermon/queries";
 import type { Sermon, VisitorDraft } from "@/lib/sermon/types";
+
+type Row = {
+  id: string;
+  draft: VisitorDraft;
+  sermon: Sermon | undefined;
+  context: NoteContext | null;
+};
+
+function rowDate(row: Row) {
+  return row.sermon?.date ?? row.context?.date ?? "";
+}
+
+function rowText(row: Row, reason: OrphanReason) {
+  return row.sermon
+    ? buildNotesText(row.sermon, row.draft, false)
+    : buildOrphanNotesText(row.draft, row.context, reason);
+}
 
 export const Route = createFileRoute("/notes")({
   head: () => ({
@@ -25,14 +52,17 @@ export const Route = createFileRoute("/notes")({
 function MyNotes() {
   const query = useSermons("public");
   const fileRef = useRef<HTMLInputElement>(null);
-  const [drafts, setDrafts] = useState<Record<string, VisitorDraft> | null>(null);
+  const [drafts, setDrafts] = useState<Record<
+    string,
+    { draft: VisitorDraft; context: NoteContext | null }
+  > | null>(null);
   const [available, setAvailable] = useState(true);
 
   const refresh = () => {
-    const next: Record<string, VisitorDraft> = {};
+    const next: Record<string, { draft: VisitorDraft; context: NoteContext | null }> = {};
     for (const id of listDraftIds()) {
       const draft = loadDraft(id);
-      if (draftHasContent(draft)) next[id] = draft;
+      if (draftHasContent(draft)) next[id] = { draft, context: loadNoteContext(id) };
     }
     setDrafts(next);
   };
@@ -43,16 +73,21 @@ function MyNotes() {
   }, []);
 
   const sermons = query.data?.sermons ?? [];
-  const rows = drafts
+  // A failed load is not the same as a removed sermon: say which one it is.
+  const orphanReason: OrphanReason = query.isError ? "unavailable" : "removed";
+  const rows: Row[] = drafts
     ? Object.entries(drafts)
-        .map(([id, draft]) => ({ id, draft, sermon: sermons.find((item) => item.id === id) }))
-        .sort((a, b) => (b.sermon?.date ?? "").localeCompare(a.sermon?.date ?? ""))
+        .map(([id, { draft, context }]) => ({
+          id,
+          draft,
+          context,
+          sermon: sermons.find((item) => item.id === id),
+        }))
+        .sort((a, b) => rowDate(b).localeCompare(rowDate(a)))
     : [];
 
   const downloadJournal = () => {
-    const parts = rows
-      .filter((row): row is { id: string; draft: VisitorDraft; sermon: Sermon } => !!row.sermon)
-      .map((row) => buildNotesText(row.sermon, row.draft, false));
+    const parts = rows.map((row) => rowText(row, orphanReason));
     if (!parts.length) {
       toast("No notes to download yet");
       return;
@@ -118,12 +153,17 @@ function MyNotes() {
           </div>
         </header>
 
+        {available && query.isError ? (
+          <LoadError
+            inline
+            onRetry={() => query.refetch()}
+            body="Sermon titles and outlines couldn’t load. Notes saved in this browser still show here and can be downloaded."
+          />
+        ) : null}
         {!available ? (
           <p className="empty">
             This browser isn’t saving notes. You can still download them from a sermon page.
           </p>
-        ) : query.isError ? (
-          <LoadError onRetry={() => query.refetch()} />
         ) : query.isPending || !drafts ? (
           <p className="empty" aria-busy="true">
             Loading your notes…
@@ -135,7 +175,8 @@ function MyNotes() {
           </p>
         ) : (
           <ol className="entries">
-            {rows.map(({ id, draft, sermon }) => {
+            {rows.map((row) => {
+              const { id, draft, sermon, context } = row;
               const blanks = sermon ? listBlanks(getSermonDoc(sermon)) : [];
               const filled = blanks.filter((blank) => (draft.blanks[blank.id] ?? "").trim()).length;
               return (
@@ -151,13 +192,17 @@ function MyNotes() {
                       <img src={sermon.cover} alt="" loading="lazy" width={480} height={300} />
                     </Link>
                   ) : (
-                    <span className="thumb" />
+                    <span className="thumb none" aria-hidden="true" />
                   )}
                   <div>
                     <div className="meta">
                       {sermon
                         ? `${formatDate(sermon.date, "short")} · ${sermon.scripture}`
-                        : "Saved on this device"}
+                        : context?.date
+                          ? [formatDate(context.date, "short"), context.scripture]
+                              .filter(Boolean)
+                              .join(" · ")
+                          : "Saved on this device"}
                     </div>
                     <h2>
                       {sermon ? (
@@ -165,9 +210,13 @@ function MyNotes() {
                           {sermon.title}
                         </Link>
                       ) : (
-                        "Sermon no longer listed"
+                        context?.title ||
+                        (orphanReason === "removed" ? "Sermon no longer listed" : "Saved notes")
                       )}
                     </h2>
+                    {!sermon ? (
+                      <OrphanNotes draft={draft} context={context} reason={orphanReason} />
+                    ) : null}
                     {sermon ? (
                       <div className="prog">
                         <span className="ticks" aria-hidden="true">
@@ -189,18 +238,19 @@ function MyNotes() {
                         Open
                       </Link>
                     ) : null}
-                    {sermon ? (
-                      <button
-                        type="button"
-                        className="link-btn"
-                        onClick={() => {
-                          downloadText(`${id}-notes.txt`, buildNotesText(sermon, draft, false));
-                          toast(`Notes for “${sermon.title}” downloaded`);
-                        }}
-                      >
-                        Download
-                      </button>
-                    ) : null}
+                    <button
+                      type="button"
+                      className="link-btn"
+                      aria-label={`Download notes for ${sermon?.title || context?.title || "this sermon"}`}
+                      onClick={() => {
+                        downloadText(`${id}-notes.txt`, rowText(row, orphanReason));
+                        toast(
+                          `Notes for “${sermon?.title || context?.title || "this sermon"}” downloaded`,
+                        );
+                      }}
+                    >
+                      Download
+                    </button>
                   </div>
                 </li>
               );
@@ -209,5 +259,42 @@ function MyNotes() {
         )}
       </div>
     </PublicShell>
+  );
+}
+
+/** Notes whose sermon is no longer in the public list: read them from this browser alone. */
+function OrphanNotes({
+  draft,
+  context,
+  reason,
+}: {
+  draft: VisitorDraft;
+  context: NoteContext | null;
+  reason: OrphanReason;
+}) {
+  const answers = orphanAnswers(draft, context);
+  const outline = context ? fillOutline(context.outline, draft.blanks) : "";
+  return (
+    <div className="orphan">
+      <p className="orphan-note">{ORPHAN_NOTICE[reason]}</p>
+      {context && answers.length ? (
+        <details className="orphan-outline">
+          <summary>
+            Read the outline with your{" "}
+            {answers.length === 1 ? "answer" : `${answers.length} answers`}
+          </summary>
+          <pre>{outline}</pre>
+        </details>
+      ) : answers.length ? (
+        <>
+          <h3 className="orphan-h">Your answers</h3>
+          <ol className="orphan-answers">
+            {answers.map((answer, index) => (
+              <li key={index}>{answer}</li>
+            ))}
+          </ol>
+        </>
+      ) : null}
+    </div>
   );
 }

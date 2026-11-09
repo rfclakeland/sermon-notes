@@ -10,13 +10,13 @@ import { sermonFromHash } from "@/lib/sermon/search";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "This Sunday’s sermon notes — Restoration Notes" },
+      { title: "Latest sermon — Restoration Notes" },
       {
         name: "description",
         content:
-          "Follow along with this week’s sermon at Restoration Fellowship Church of Lakeland and keep your notes on your device.",
+          "Follow along with the latest sermon at Restoration Fellowship Church of Lakeland and keep your notes on your device.",
       },
-      { property: "og:title", content: "This Sunday’s sermon notes — Restoration Notes" },
+      { property: "og:title", content: "Latest sermon — Restoration Notes" },
       {
         property: "og:description",
         content: "Fill in the blanks, write reflections, and save or email your sermon notes.",

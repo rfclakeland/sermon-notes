@@ -92,7 +92,7 @@ function Archive() {
             ))}
           </div>
         ) : query.isError ? (
-          <LoadError onRetry={() => query.refetch()} />
+          <LoadError inline onRetry={() => query.refetch()} />
         ) : results.length === 0 ? (
           <p className="empty">
             {text
