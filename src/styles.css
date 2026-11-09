@@ -1,0 +1,474 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+@import "./styles/concept.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Restoration Notes. Parchment, night, and a single brass accent.
+ * Display: Fraunces. UI: Source Sans 3. Reading: Source Serif 4.
+ */
+
+@theme inline {
+  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-reading: "Source Serif 4", Georgia, "Times New Roman", serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-glow: var(--primary-glow);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-paper: var(--paper);
+  --color-blank: var(--blank);
+  --color-blank-line: var(--blank-line);
+  --color-revealed: var(--revealed);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.2rem;
+  --background: #f2ece0;
+  --paper: #f8f4eb;
+  --foreground: #1b1d22;
+  --card: #f8f4eb;
+  --card-foreground: #1b1d22;
+  --popover: #f8f4eb;
+  --popover-foreground: #1b1d22;
+  --primary: #101217;
+  --primary-glow: #1c2b4d;
+  --primary-foreground: #f5f1e8;
+  --secondary: #e7e0d2;
+  --secondary-foreground: #1b1d22;
+  --muted: #e7e0d2;
+  --muted-foreground: #5f5b53;
+  --accent: #f3ead6;
+  --accent-foreground: #7a5c24;
+  --destructive: #8c2f2f;
+  --destructive-foreground: #f8f4eb;
+  --warning: #f3ead6;
+  --warning-foreground: #7a5c24;
+  /* ≥3:1 against background, paper and muted fills (field boundaries and rules). */
+  --border: #857b6a;
+  --input: #857b6a;
+  /* Focus ring ≥3:1 on parchment (3.66) and paper (3.92). */
+  --ring: #8f7740;
+  --blank: transparent;
+  --blank-line: #3a3c42;
+  --revealed: #1c2b4d;
+  --shadow-soft: 0 1px 2px oklch(0.2 0.01 60 / 0.04), 0 8px 24px -12px oklch(0.2 0.01 60 / 0.12);
+  --shadow-lift: 0 24px 60px -28px oklch(0.3 0.12 263 / 0.45);
+  --shadow-glow: 0 10px 30px -10px oklch(0.5 0.22 264 / 0.55);
+  --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-glow));
+  --gradient-wash: radial-gradient(1200px 500px at 15% -10%, oklch(0.9 0.06 263 / 0.7), transparent 70%), radial-gradient(900px 400px at 100% 0%, oklch(0.93 0.05 70 / 0.6), transparent 70%);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.972 0.005 80);
+  --sidebar-foreground: oklch(0.2 0.012 60);
+  --sidebar-primary: oklch(0.47 0.19 263);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.945 0.025 263);
+  --sidebar-accent-foreground: oklch(0.37 0.17 263);
+  --sidebar-border: oklch(0.9 0.007 80);
+  --sidebar-ring: oklch(0.47 0.19 263);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    overflow-x: hidden;
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
+@utility type-display {
+  font-family: var(--font-display);
+  font-size: clamp(2.125rem, 1.35rem + 3.3vw, 3.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  font-weight: 650;
+  text-wrap: balance;
+}
+
+@utility type-section {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  font-weight: 620;
+}
+
+@utility type-eyebrow {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--color-muted-foreground);
+}
+
+@utility measure {
+  max-width: 50rem;
+  margin-inline: auto;
+}
+
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+@utility shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+@utility bg-gradient-primary {
+  background-image: var(--gradient-primary);
+}
+
+@utility surface {
+  background: var(--color-paper);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+@utility surface-hover {
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+    border-color: oklch(0.85 0.05 263);
+  }
+}
+
+@utility shadow-lift {
+  box-shadow: var(--shadow-lift);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ---------- Sermon document (shared by reader and editor) ---------- */
+.prose-sermon {
+  font-family: var(--font-reading);
+  font-size: 1.1875rem;
+  line-height: 1.72;
+  color: var(--color-foreground);
+  max-width: 50rem;
+  margin-inline: auto;
+  overflow-wrap: break-word;
+}
+@media (min-width: 768px) {
+  .prose-sermon {
+    font-size: 1.25rem;
+  }
+}
+.prose-sermon > * + * {
+  margin-top: 1.05em;
+}
+.prose-sermon h1,
+.prose-sermon h2,
+.prose-sermon h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  font-weight: 640;
+  margin-top: 1.8em;
+}
+.prose-sermon h1 {
+  font-size: 1.6em;
+}
+.prose-sermon h2 {
+  font-size: 1.3em;
+}
+.prose-sermon h3 {
+  font-size: 1.08em;
+}
+.prose-sermon ol,
+.prose-sermon ul {
+  padding-left: 1.6em;
+}
+.prose-sermon ol {
+  list-style: none;
+  counter-reset: pt;
+  padding-left: 2.6em;
+}
+.prose-sermon ol > li {
+  counter-increment: pt;
+  position: relative;
+}
+.prose-sermon ol > li::before {
+  content: counter(pt);
+  position: absolute;
+  left: -2.4em;
+  top: 0.15em;
+  width: 1.6em;
+  height: 1.6em;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 0.82em;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+  background-image: var(--gradient-primary);
+  box-shadow: var(--shadow-glow);
+}
+.prose-sermon ul {
+  list-style: disc;
+}
+.prose-sermon li + li {
+  margin-top: 0.7em;
+}
+.prose-sermon li::marker {
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-weight: 650;
+}
+.prose-sermon li > p {
+  margin: 0;
+}
+.prose-sermon blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 1.1em;
+  color: oklch(0.32 0.012 60);
+  font-style: italic;
+}
+.prose-sermon blockquote > * + * {
+  margin-top: 0.6em;
+}
+.prose-sermon .sz-small,
+.prose-sermon [data-size="small"] {
+  font-size: 0.85em;
+}
+.prose-sermon .sz-large,
+.prose-sermon [data-size="large"] {
+  font-size: 1.25em;
+}
+.prose-sermon .sz-huge,
+.prose-sermon [data-size="huge"] {
+  font-size: 1.6em;
+  line-height: 1.3;
+}
+
+/* Inline fill-in fields */
+.blank-input {
+  font: inherit;
+  font-family: var(--font-sans);
+  font-size: 0.95em;
+  font-weight: 600;
+  color: var(--color-foreground);
+  background: var(--color-blank);
+  border: 1.5px solid var(--color-blank-line);
+  border-radius: 10px;
+  padding: 0.1em 0.5em;
+  margin: 0 0.1em;
+  min-height: 1.6em;
+  max-width: 100%;
+  vertical-align: baseline;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    width 0.08s;
+}
+.blank-input:hover {
+  background: oklch(0.92 0.05 263);
+}
+.blank-input:not(:placeholder-shown):not(.is-revealed) {
+  background: var(--color-paper);
+  border-color: var(--color-primary);
+  color: var(--color-accent-foreground);
+}
+.blank-input:focus-visible,
+.blank-input:focus {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 1px;
+  background: var(--color-paper);
+}
+.blank-input.is-revealed {
+  color: var(--color-revealed);
+  font-style: italic;
+  background: var(--color-paper);
+  border-style: dashed;
+}
+.note-area {
+  display: block;
+  width: 100%;
+  margin: 0.6em 0;
+  resize: none;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  min-height: 6.5em;
+  padding: 0.85em 1em;
+  border-radius: 12px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-input);
+}
+.note-area.is-revealed {
+  color: var(--color-revealed);
+  font-style: italic;
+}
+
+/* Editor */
+.sermon-editor .ProseMirror {
+  outline: none;
+  min-height: 50vh;
+  padding-bottom: 30vh;
+}
+.sermon-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--color-muted-foreground);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+.blank-token {
+  display: inline;
+}
+.blank-token-btn {
+  font-family: var(--font-sans);
+  font-size: 0.88em;
+  font-weight: 600;
+  color: var(--color-accent-foreground);
+  background: var(--color-blank);
+  border-bottom: 2px solid var(--color-blank-line);
+  border-radius: 6px 6px 2px 2px;
+  padding: 0.05em 0.45em;
+  margin: 0 0.08em;
+  cursor: pointer;
+  white-space: pre-wrap;
+}
+.blank-token-btn:hover {
+  background: oklch(0.92 0.04 263);
+}
+.blank-token.is-note .blank-token-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  border: 1px dashed var(--color-blank-line);
+  border-radius: 10px;
+  padding: 0.35em 0.75em;
+}
+.blank-token.is-selected .blank-token-btn,
+.ProseMirror-selectednode .blank-token-btn {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 1px;
+}
+
+.print-only {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  @page {
+    margin: 18mm 16mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: inline !important;
+  }
+  .print-block {
+    display: block !important;
+    white-space: pre-wrap;
+  }
+  .blank-input,
+  .note-area,
+  .personal-notes textarea {
+    display: none !important;
+  }
+  .print-blank {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    border-bottom: 1px solid #000;
+    padding: 0 0.2em;
+  }
+  .prose-sermon {
+    max-width: none;
+    font-size: 12pt;
+    line-height: 1.55;
+  }
+  .print-cover {
+    max-height: 70mm;
+  }
+  a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+}
