@@ -1,8 +1,10 @@
 # What's New
 
-## 0.3.0 · 2026-11-22T06:26Z
+## 0.3.0 · 2026-11-22T07:16Z
 
-Staff editor uses your RFC account. Sign in with your Media Portal password or request a one-time email link. Notes permissions control who can view drafts, edit sermons, and delete them.
+Staff editor uses your RFC account. Sign in with your Media Portal email and password or request a one-time email link. Notes permissions control who can view drafts, edit sermons, and delete them. The old shared staff password is retired.
+
+New Restoration Notes icon for browser tabs and home screens, and page titles and previews now name Restoration Fellowship Church of Lakeland.
 
 ## 0.2.0
 

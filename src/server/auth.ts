@@ -19,7 +19,8 @@ const NO_ACCESS = "Your RFC account doesn’t have Notes editor access. Ask an a
 const APP = "notes";
 
 export function authConfig(env: WorkerEnv) {
-  const { AUTH_DB, AUTH_SECRET, APP_ORIGIN, AUTH_MAILER, AUTH_FROM_ADDRESS } = env;
+  const { AUTH_DB, AUTH_SECRET, APP_ORIGIN, APP_ORIGIN_ALIASES, AUTH_MAILER, AUTH_FROM_ADDRESS } =
+    env;
   if (!AUTH_DB || !AUTH_SECRET || AUTH_SECRET.length < 32 || /REPLACE_ME/.test(AUTH_SECRET)) {
     throw new HttpError(503, "Staff sign-in isn’t connected yet.");
   }
@@ -29,6 +30,11 @@ export function authConfig(env: WorkerEnv) {
     db: AUTH_DB,
     secret: AUTH_SECRET,
     appOrigin: APP_ORIGIN,
+    // Extra HTTPS origins (for example the workers.dev address) that may sign in alongside APP_ORIGIN.
+    aliases: (APP_ORIGIN_ALIASES ?? "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean),
     appId: APP,
   });
   if (AUTH_MAILER && AUTH_FROM_ADDRESS && /^[^\s@<>]+@rfclakeland\.com$/i.test(AUTH_FROM_ADDRESS)) {

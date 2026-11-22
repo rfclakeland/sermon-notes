@@ -16,7 +16,11 @@ Both built-in roles can view, edit, and delete. The admin role also has `notes.a
 
 Email links expire after 20 minutes and can be used once. Only active accounts with `notes.access` are eligible. The link opens a confirmation page, where the user chooses to sign in. Each platform account can have one outstanding link across RFC apps, so a newly issued Notes link supersedes an older link.
 
-## Preview setup with owner approval
+## Status (Nov 22, 2026)
+
+Approved and applied by the owner: the Notes permission migration is in `rfc-church`, the owner holds Notes admin, and `wrangler.jsonc` binds `AUTH_DB` to `rfc-church`. `APP_ORIGIN` is `https://notes.rfclakeland.com`; `APP_ORIGIN_ALIASES` allows the workers.dev address. Each address has its own host-only cookie, so signing in on one doesn't sign you in on the other.
+
+## Setup steps (as performed with owner approval)
 
 The owner performs these steps after approving the preview’s access to `rfc-church`. A D1 binding gives the preview Worker read-write access to the entire production church database. The Notes auth code uses only `platform_*` tables and writes session, link, and rate-limit rows there. Keep the binding out of the checked-in default configuration until approved.
 

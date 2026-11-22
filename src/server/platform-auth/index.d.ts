@@ -17,6 +17,7 @@ type Options = {
   db: D1Like;
   secret: string;
   appOrigin: string;
+  aliases?: string[];
   appId: string;
   sendAuthEmail?: (email: EmailLink) => Promise<void>;
 };

@@ -39,6 +39,7 @@ export type WorkerEnv = {
   AUTH_DB?: D1Like;
   AUTH_SECRET?: string;
   APP_ORIGIN?: string;
+  APP_ORIGIN_ALIASES?: string;
   AUTH_MAILER?: AuthMailer;
   AUTH_FROM_ADDRESS?: string;
 };
@@ -67,14 +68,23 @@ function isR2(value: unknown): value is R2Like {
 export function readEnv(request: Request): WorkerEnv {
   const runtimeEnv = (request as WorkerRequest).runtime?.cloudflare?.env;
   const globalEnv = (globalThis as { __env__?: Record<string, unknown> }).__env__;
-  const { DB, COVERS, AUTH_DB, AUTH_SECRET, APP_ORIGIN, AUTH_MAILER, AUTH_FROM_ADDRESS } =
-    runtimeEnv ?? globalEnv ?? {};
+  const {
+    DB,
+    COVERS,
+    AUTH_DB,
+    AUTH_SECRET,
+    APP_ORIGIN,
+    APP_ORIGIN_ALIASES,
+    AUTH_MAILER,
+    AUTH_FROM_ADDRESS,
+  } = runtimeEnv ?? globalEnv ?? {};
   return {
     ...(isD1(DB) ? { DB } : {}),
     ...(isR2(COVERS) ? { COVERS } : {}),
     ...(isD1(AUTH_DB) ? { AUTH_DB } : {}),
     ...(typeof AUTH_SECRET === "string" ? { AUTH_SECRET } : {}),
     ...(typeof APP_ORIGIN === "string" ? { APP_ORIGIN } : {}),
+    ...(typeof APP_ORIGIN_ALIASES === "string" ? { APP_ORIGIN_ALIASES } : {}),
     ...(AUTH_MAILER && typeof (AUTH_MAILER as AuthMailer).send === "function"
       ? { AUTH_MAILER: AUTH_MAILER as AuthMailer }
       : {}),
