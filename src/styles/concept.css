@@ -120,37 +120,18 @@
 }
 
 .rn .hero {
-  position: relative;
-  /* Shorter on desktop so the first blanks sit closer to the fold. */
-  height: clamp(380px, 54vh, 560px);
-  background: var(--night);
-  color: var(--on-dark);
-  overflow: hidden;
+  background: var(--parchment);
+  color: var(--ink);
 }
 .rn .hero img {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
-  height: 100%;
+  height: clamp(380px, 54vh, 560px);
   object-fit: cover;
   object-position: center 40%;
 }
-.rn .hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(to top, rgba(10, 11, 14, 0.94) 0%, rgba(10, 11, 14, 0.78) 24%, rgba(10, 11, 14, 0.34) 52%, rgba(10, 11, 14, 0.05) 74%, rgba(10, 11, 14, 0.18) 100%),
-    linear-gradient(to right, rgba(10, 11, 14, 0.55) 0%, rgba(10, 11, 14, 0) 60%);
-}
 .rn .hero .wrap {
-  position: relative;
-  z-index: 1;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding-bottom: clamp(28px, 5vh, 56px);
+  padding-block: clamp(24px, 5vw, 64px);
 }
 .rn .eyebrow {
   display: flex;
@@ -160,14 +141,14 @@
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--gold-light);
+  color: var(--gold-text);
   margin: 0 0 14px;
 }
 .rn .eyebrow::before {
   content: "";
   width: 38px;
   height: 1px;
-  background: var(--gold-light);
+  background: var(--gold);
 }
 .rn .hero h1 {
   font-family: var(--display);
@@ -179,7 +160,6 @@
   margin: 0;
   max-width: 14ch;
   text-wrap: balance;
-  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.35);
 }
 .rn .hero .byline {
   display: flex;
@@ -188,12 +168,12 @@
   gap: 6px 18px;
   margin-top: 22px;
   font-size: 16px;
-  color: var(--on-dark);
+  color: var(--ink);
 }
 .rn .hero .byline .sep {
   width: 4px;
   height: 4px;
-  background: var(--gold-light);
+  background: var(--gold);
   transform: rotate(45deg);
 }
 .rn .hero .byline a {
@@ -202,9 +182,9 @@
   font-family: var(--display);
   font-style: italic;
   font-size: 19px;
-  color: var(--gold-light);
+  color: var(--gold-text);
   text-decoration: none;
-  border-bottom: 1px solid rgba(214, 182, 121, 0.5);
+  border-bottom: 1px solid var(--rule-gold);
   min-height: 44px;
   padding: 4px 0 2px;
 }
@@ -610,28 +590,17 @@
 .rn .tile {
   position: relative;
   display: block;
-  aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: var(--night);
-  color: var(--on-dark);
+  background: var(--paper);
+  color: var(--ink);
   text-decoration: none;
 }
 .rn .tile img {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
-  transition: transform 0.6s ease;
-}
-.rn .tile:hover img {
-  transform: scale(1.03);
-}
-.rn .tile::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(10, 11, 14, 0.92) 0%, rgba(10, 11, 14, 0.6) 34%, rgba(10, 11, 14, 0.08) 68%);
 }
 .rn .tile .tile-link {
   position: absolute;
@@ -639,16 +608,14 @@
   z-index: 1;
 }
 .rn .tile .tile-link:focus-visible {
-  outline: 2px solid var(--gold-light);
+  outline: 2px solid var(--rule-gold);
   outline-offset: -3px;
 }
 .rn .tile .cap {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
   z-index: 2;
   pointer-events: none;
+  overflow-wrap: anywhere;
   padding: 22px 24px;
 }
 .rn .tile .ref {
@@ -656,7 +623,7 @@
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--gold-light);
+  color: var(--gold-text);
 }
 .rn .tile h3 {
   font-family: var(--display);
@@ -669,11 +636,11 @@
 }
 .rn .tile .date {
   font-size: 14px;
-  color: var(--on-dark-muted);
+  color: var(--ink);
 }
 .rn .tile .tile-series {
   pointer-events: auto;
-  color: inherit;
+  color: var(--gold-text);
   text-decoration: underline;
   text-underline-offset: 0.16em;
   overflow-wrap: anywhere;
@@ -709,55 +676,12 @@
   padding: 16px 18px;
 }
 
-.rn .hero.typographic {
-  height: auto;
-  background: var(--parchment);
-  color: var(--ink);
-}
-.rn .hero.typographic::after,
-.rn .tile.typographic::after {
-  display: none;
-}
-.rn .hero.typographic .wrap {
-  height: auto;
-  padding-block: clamp(24px, 5vw, 64px);
-}
-.rn .hero.typographic h1 {
-  text-shadow: none;
-}
-.rn .hero.typographic .eyebrow,
-.rn .hero.typographic .byline a,
-.rn .tile.typographic .ref,
-.rn .tile.typographic .tile-series {
-  color: var(--gold-text);
-}
-.rn .hero.typographic .eyebrow::before,
-.rn .hero.typographic .byline .sep {
-  background: var(--gold);
-}
-.rn .hero.typographic .byline,
-.rn .tile.typographic .date {
-  color: var(--ink);
-}
-.rn .hero.typographic .byline a {
-  border-color: var(--rule-gold);
-}
 .rn .tile.typographic {
-  aspect-ratio: auto;
-  background: var(--paper);
-  color: var(--ink);
   border-top: 1px solid var(--rule-gold);
 }
 .rn .tile.typographic:hover,
 .rn .tile.typographic:focus-within {
   background: var(--parchment);
-}
-.rn .tile.typographic .tile-link:focus-visible {
-  outline-color: var(--rule-gold);
-}
-.rn .tile.typographic .cap {
-  position: relative;
-  overflow-wrap: anywhere;
 }
 .rn .tile.typographic .badge {
   position: static;
@@ -1214,8 +1138,9 @@
   .rn header.app .wrap {
     padding-right: 8px;
   }
-  .rn .hero {
-    height: max(46vh, 360px);
+  .rn .hero img {
+    height: auto;
+    aspect-ratio: 16 / 10;
   }
   .rn .hero h1 {
     font-size: clamp(2.5rem, 11vw, 3.4rem);
@@ -1300,7 +1225,8 @@
   .rn .finder ~ .grid2 {
     gap: 12px;
   }
-  .rn .tile.typographic .cap {
+  .rn .tile .cap,
+  .rn .tile.sm .cap {
     padding: 14px 16px;
   }
   .rn .page-head.split,
@@ -1356,11 +1282,6 @@
     right: 5px;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .rn .tile img {
-    transition: none;
-  }
-}
 @media print {
   .rn header.app,
   .rn .persist,
@@ -1369,14 +1290,11 @@
   .rn .chips {
     display: none !important;
   }
-  .rn .hero,
-  .rn .hero.typographic {
-    height: auto;
+  .rn .hero {
     color: var(--ink);
     background: none;
   }
-  .rn .hero img,
-  .rn .hero::after {
+  .rn .hero img {
     display: none;
   }
   .rn .blank {
