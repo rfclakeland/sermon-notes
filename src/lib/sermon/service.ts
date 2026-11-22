@@ -15,15 +15,36 @@ export class ConflictError extends Error {
  * `createHttpSermonService()` (see http-service.ts) that calls the Cloudflare
  * Worker endpoints; the prototype uses the explicit local demo adapter below.
  */
+export type SermonScope = "public" | "staff";
+
+export type StaffIdentity = { displayName: string; permissions: string[] };
+export type StaffSession =
+  | { status: "signed-in"; identity: StaffIdentity }
+  | { status: "signed-out"; emailLinks: boolean }
+  | { status: "no-access" }
+  | { status: "not-connected" };
+
+export class StaffAuthError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "StaffAuthError";
+  }
+}
+
 export interface SermonService {
   readonly kind: "local-demo" | "http";
-  list(): Promise<SermonCollection>;
+  list(scope?: SermonScope): Promise<SermonCollection>;
   /** Saves the whole collection; throws ConflictError when `revision` is stale (HTTP 409). */
   save(sermons: Sermon[], revision: number): Promise<SermonCollection>;
   /** Receives an already-resized JPEG. */
   uploadCover(jpeg: Blob): Promise<{ cover: string }>;
-  login(password: string): Promise<boolean>;
-  session(): Promise<{ authenticated: boolean }>;
+  login(email: string, password: string): Promise<void>;
+  requestSignInLink(email: string): Promise<{ message: string }>;
+  consumeSignInLink(token: string): Promise<void>;
+  session(): Promise<StaffSession>;
   logout(): Promise<void>;
 }
 
@@ -96,11 +117,29 @@ export const localDemoService: SermonService & {
   async login() {
     await delay(300);
     window.sessionStorage.setItem(SESSION_KEY, "demo");
-    return true;
+  },
+  async requestSignInLink() {
+    throw new StaffAuthError(503, "Email sign-in links aren’t available in the demo.");
+  },
+  async consumeSignInLink() {
+    throw new StaffAuthError(503, "Email sign-in links aren’t available in the demo.");
   },
   async session() {
-    if (typeof window === "undefined") return { authenticated: false };
-    return { authenticated: window.sessionStorage.getItem(SESSION_KEY) === "demo" };
+    if (typeof window === "undefined" || window.sessionStorage.getItem(SESSION_KEY) !== "demo") {
+      return { status: "signed-out", emailLinks: false };
+    }
+    return {
+      status: "signed-in",
+      identity: {
+        displayName: "Demo Editor",
+        permissions: [
+          "notes.access",
+          "notes.sermons.view",
+          "notes.sermons.edit",
+          "notes.sermons.delete",
+        ],
+      },
+    };
   },
   async logout() {
     window.sessionStorage.removeItem(SESSION_KEY);

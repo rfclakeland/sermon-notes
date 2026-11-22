@@ -1,10 +1,13 @@
 {
   "name": "restoration-notes",
+  "version": "0.3.0",
   "private": true,
   "sideEffects": false,
   "type": "module",
   "scripts": {
     "dev": "vite dev",
+    "dev:auth:seed": "node scripts/auth-dev-db.mjs",
+    "dev:auth": "wrangler dev --local --config wrangler.local.jsonc --persist-to .wrangler/notes-auth --local-protocol https --ip 127.0.0.1 --port 8787",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",

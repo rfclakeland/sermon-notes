@@ -1,31 +1,44 @@
-import { ConflictError, type SermonService } from "./service";
+import { ConflictError, StaffAuthError, type SermonService, type StaffIdentity } from "./service";
 import { validateCollection } from "./validate";
 
-/**
- * Integration target (NOT used by the prototype). Mirrors the existing
- * Cloudflare Worker API. Auth is the server's HttpOnly session cookie —
- * same-origin `credentials: "same-origin"` requests only.
- */
+/** Cloudflare Worker adapter. The browser holds the session in an HttpOnly cookie. */
 export function createHttpSermonService(base = ""): SermonService {
-  const req = async (path: string, init?: RequestInit) => {
-    const res = await fetch(base + path, { credentials: "same-origin", ...init });
+  const req = (path: string, init?: RequestInit) =>
+    fetch(base + path, { credentials: "same-origin", ...init });
+
+  const postJson = (path: string, body: object) =>
+    req(path, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+  const authPost = async (path: string, body: object) => {
+    const res = await postJson(path, body);
+    if (!res.ok) {
+      const data = (await res.json().catch(() => null)) as { error?: string } | null;
+      throw new StaffAuthError(
+        res.status,
+        data?.error || "Staff sign-in is temporarily unavailable.",
+      );
+    }
     return res;
   };
+
   return {
     kind: "http",
-    async list() {
-      const res = await req("/api/sermons");
+    async list(scope = "public") {
+      const res = await req(scope === "staff" ? "/api/sermons?scope=staff" : "/api/sermons");
       if (!res.ok) throw new Error(`Could not load sermons (${res.status}).`);
       return validateCollection(await res.json());
     },
     async save(sermons, revision) {
-      const res = await req("/api/sermons", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ sermons, revision }),
-      });
+      const res = await postJson("/api/sermons", { sermons, revision });
       if (res.status === 409) throw new ConflictError();
-      if (!res.ok) throw new Error(`Save failed (${res.status}).`);
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(data?.error || `Save failed (${res.status}).`);
+      }
       return validateCollection(await res.json());
     },
     async uploadCover(jpeg) {
@@ -37,20 +50,32 @@ export function createHttpSermonService(base = ""): SermonService {
       if (!res.ok) throw new Error(`Cover upload failed (${res.status}).`);
       return (await res.json()) as { cover: string };
     },
-    async login(password) {
-      const res = await req("/api/login", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-      return res.ok;
+    async login(email, password) {
+      await authPost("/api/login", { email, password });
+    },
+    async requestSignInLink(email) {
+      const res = await authPost("/api/link/request", { email });
+      return (await res.json()) as { message: string };
+    },
+    async consumeSignInLink(token) {
+      await authPost("/api/link/consume", { token });
     },
     async session() {
       const res = await req("/api/session");
-      return res.ok ? ((await res.json()) as { authenticated: boolean }) : { authenticated: false };
+      if (res.status === 503) return { status: "not-connected" };
+      if (res.status === 403) return { status: "no-access" };
+      if (!res.ok) throw new Error("Couldn’t check your staff sign-in.");
+      const session = (await res.json()) as
+        { authenticated: false; emailLinks: boolean } | ({ authenticated: true } & StaffIdentity);
+      return session.authenticated
+        ? {
+            status: "signed-in",
+            identity: { displayName: session.displayName, permissions: session.permissions },
+          }
+        : { status: "signed-out", emailLinks: session.emailLinks };
     },
     async logout() {
-      await req("/api/logout", { method: "POST" });
+      await authPost("/api/logout", {});
     },
   };
 }

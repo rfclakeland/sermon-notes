@@ -1,0 +1,8 @@
+-- Replace REPLACE_WITH_EMAIL with an existing platform user's email.
+-- Choose 'editor' for the Notes editor role or 'admin' for the Notes admin role.
+INSERT INTO platform_user_app_roles(user_id, app, role)
+SELECT u.id, r.app, r.role
+FROM platform_users u
+JOIN platform_roles r ON r.app = 'notes' AND r.role = 'admin'
+WHERE u.email = 'REPLACE_WITH_EMAIL' COLLATE NOCASE
+ON CONFLICT DO NOTHING;

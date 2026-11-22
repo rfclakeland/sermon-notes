@@ -94,32 +94,38 @@ export function createD1Store(db: D1Like, covers?: R2Like): SermonStore {
   return {
     async list() {
       await ensureSeeded(db);
-      const rows = await db.prepare("SELECT payload FROM sermons").all<SermonRow>();
-      const sermons = sortNewestFirst(rows.results.map((row) => JSON.parse(row.payload) as Sermon));
-      const revisionRow = await db
-        .prepare("SELECT value FROM app_meta WHERE key = 'revision'")
-        .first<MetaRow>();
-      const revision = Number(revisionRow?.value ?? "1");
+      // The delete authorization check must see IDs and their revision in the same snapshot.
+      const [rows, meta] = await db.batch([
+        db.prepare("SELECT payload FROM sermons"),
+        db.prepare("SELECT value FROM app_meta WHERE key = 'revision'"),
+      ]);
+      const sermons = sortNewestFirst(
+        (rows!.results as SermonRow[]).map((row) => JSON.parse(row.payload) as Sermon),
+      );
+      const revision = Number((meta!.results[0] as MetaRow | undefined)?.value ?? "1");
       return validateCollection({ sermons, revision: Number.isFinite(revision) ? revision : 1 });
     },
     async save(sermons, revision) {
       await ensureSeeded(db);
-      const current = await db
-        .prepare("SELECT value FROM app_meta WHERE key = 'revision'")
-        .first<MetaRow>();
-      const currentRevision = Number(current?.value ?? "0");
-      if (revision !== currentRevision) throw new ConflictError();
-      const next = currentRevision + 1;
+      const next = revision + 1;
       const sorted = sortNewestFirst(sermons);
-      await db.batch([
-        db.prepare("DELETE FROM sermons"),
+      const expected = String(revision);
+      // Every write is conditional on the checked revision. D1 runs the batch atomically.
+      const hasRevision = "EXISTS (SELECT 1 FROM app_meta WHERE key = 'revision' AND value = ?)";
+      const results = await db.batch([
+        db.prepare(`DELETE FROM sermons WHERE ${hasRevision}`).bind(expected),
         ...sorted.map((sermon) =>
           db
-            .prepare("INSERT INTO sermons (id, date, status, payload) VALUES (?, ?, ?, ?)")
-            .bind(sermon.id, sermon.date, sermon.status, JSON.stringify(sermon)),
+            .prepare(
+              `INSERT INTO sermons (id, date, status, payload) SELECT ?, ?, ?, ? WHERE ${hasRevision}`,
+            )
+            .bind(sermon.id, sermon.date, sermon.status, JSON.stringify(sermon), expected),
         ),
-        db.prepare("UPDATE app_meta SET value = ? WHERE key = 'revision'").bind(String(next)),
+        db
+          .prepare("UPDATE app_meta SET value = ? WHERE key = 'revision' AND value = ?")
+          .bind(String(next), expected),
       ]);
+      if (!results.at(-1)?.meta.changes) throw new ConflictError();
       return { sermons: sorted, revision: next };
     },
     async putCover(id, bytes) {

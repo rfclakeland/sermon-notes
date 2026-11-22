@@ -1,4 +1,2 @@
-# Copy to .dev.vars for local Wrangler. Never commit real values.
-# Set the same names on the preview Worker with `wrangler secret put`.
+# For the local auth config, copy to .dev.vars and set a random value of at least 32 characters.
 AUTH_SECRET=
-STAFF_PASSWORD=

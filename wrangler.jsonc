@@ -5,21 +5,26 @@
   "observability": {
     "enabled": true,
     "traces": {
-      "enabled": true
-    }
+      "enabled": true,
+    },
   },
   // Preview Worker only. Do not add a routes or workers custom-domain entry.
+  "vars": {
+    "APP_ORIGIN": "https://restoration-notes.media-ff8.workers.dev",
+    "AUTH_FROM_ADDRESS": "media@rfclakeland.com",
+  },
+  "send_email": [{ "name": "AUTH_MAILER", "allowed_sender_addresses": ["media@rfclakeland.com"] }],
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "restoration-notes-preview",
-      "migrations_dir": "migrations"
-    }
+      "migrations_dir": "migrations",
+    },
   ],
   "r2_buckets": [
     {
       "binding": "COVERS",
-      "bucket_name": "restoration-notes-preview-covers"
-    }
-  ]
+      "bucket_name": "restoration-notes-preview-covers",
+    },
+  ],
 }

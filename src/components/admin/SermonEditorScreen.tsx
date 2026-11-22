@@ -45,6 +45,7 @@ import {
   slugify,
 } from "@/lib/sermon/validate";
 import { cn } from "@/lib/utils";
+import type { AdminSession } from "./AdminGate";
 import { AdminTopBar } from "./AdminTopBar";
 import { EditorToolbar } from "./editor/EditorToolbar";
 import {
@@ -75,10 +76,10 @@ const todayIso = () => {
 
 export function SermonEditorScreen({
   sermonId,
-  onSignOut,
+  session,
 }: {
   sermonId: string;
-  onSignOut: () => void;
+  session: AdminSession;
 }) {
   const q = useSermons("staff");
   if (q.isPending)
@@ -110,10 +111,11 @@ export function SermonEditorScreen({
         </Button>
       </div>
     );
-  return <EditorInner original={sermon ?? null} onSignOut={onSignOut} />;
+  return <EditorInner original={sermon ?? null} session={session} />;
 }
 
-function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignOut: () => void }) {
+function EditorInner({ original, session }: { original: Sermon | null; session: AdminSession }) {
+  const canDelete = session.permissions.includes("notes.sermons.delete");
   const qc = useQueryClient();
   const navigate = useNavigate();
   const isNew = !original;
@@ -227,7 +229,7 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
       );
     }
     const latest = opts?.overwrite
-      ? await sermonService.list()
+      ? await sermonService.list("staff")
       : qc.getQueryData<{ sermons: Sermon[]; revision: number }>(["sermons", "staff"]);
     if (!latest) return null;
     if (isNew && (!SERMON_ID_RE.test(meta.id) || latest.sermons.some((s) => s.id === meta.id))) {
@@ -388,10 +390,10 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
   };
 
   const remove = async () => {
-    if (!original) return;
-    const latest = await sermonService.list();
+    if (!original || !canDelete) return;
     setSaveState("saving");
     try {
+      const latest = await sermonService.list("staff");
       const res = await sermonService.save(
         latest.sermons.filter((sermon) => sermon.id !== original.id),
         latest.revision,
@@ -437,7 +439,7 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
 
   return (
     <div className="min-h-screen">
-      <AdminTopBar onSignOut={onSignOut} />
+      <AdminTopBar {...session} />
 
       {/* Action bar */}
       <div className="sticky top-[61px] z-20 border-b border-border bg-background/95 backdrop-blur">
@@ -695,7 +697,7 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
               Resized to a JPEG at most 1920px on the long edge and 2 MB, then stored with this
               preview.
             </p>
-            {!isNew ? (
+            {!isNew && canDelete ? (
               <Button
                 variant="ghost"
                 size="sm"
@@ -763,7 +765,10 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={confirmDelete} onOpenChange={(open) => !open && setConfirmDelete(false)}>
+      <AlertDialog
+        open={confirmDelete && canDelete}
+        onOpenChange={(open) => !open && setConfirmDelete(false)}
+      >
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this sermon?</AlertDialogTitle>

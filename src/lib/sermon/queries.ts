@@ -1,14 +1,12 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { publicSermons } from "./public";
-import { sermonService } from "./service";
-
-export type SermonScope = "public" | "staff";
+import { sermonService, type SermonScope } from "./service";
 
 export function sermonsQuery(scope: SermonScope = "public") {
   return queryOptions({
     queryKey: ["sermons", scope],
     queryFn: async () => {
-      const data = await sermonService.list();
+      const data = await sermonService.list(scope);
       if (scope === "public") return { ...data, sermons: publicSermons(data.sermons) };
       return data;
     },

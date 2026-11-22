@@ -1101,23 +1101,119 @@
   max-width: 36rem;
 }
 
+.rn.staff-screen .brand {
+  align-items: center;
+  min-height: 44px;
+}
+.rn .staff-main {
+  padding: clamp(42px, 10vh, 96px) var(--gutter) 56px;
+}
+.rn .staff-panel {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: clamp(22px, 6vw, 42px);
+  border: 1px solid #c9bcaa;
+  border-top: 3px solid var(--rule-gold);
+  background: var(--paper);
+}
+.rn .staff-panel h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(1.9rem, 5.5vw, 2.75rem);
+  font-weight: 560;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.rn .staff-description {
+  margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: 17px;
+  line-height: 1.45;
+}
 .rn .staff-form {
-  max-width: 26rem;
-  padding-bottom: 40px;
+  display: grid;
+  gap: 16px;
+  margin-top: 26px;
 }
 .rn .staff-form label {
   display: block;
-  font-weight: 600;
-  margin: 0 0 6px;
+  margin: 0 0 5px;
+  font-weight: 650;
 }
-.rn .staff-form .search {
-  width: 100%;
+.rn .staff-form input {
   display: block;
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: #fffdf8;
+  padding: 0 12px;
+  font-size: 16px;
 }
-.rn .staff-form .error {
-  margin: 14px 0 0;
-  color: #8c2f2f;
-  font-weight: 600;
+.rn .staff-password {
+  position: relative;
+}
+.rn .staff-password input {
+  padding-inline-end: 76px;
+}
+.rn .staff-password button {
+  position: absolute;
+  inset: 1px 1px 1px auto;
+  min-width: 64px;
+  color: var(--navy);
+}
+.rn .staff-panel .tbtn {
+  border-radius: 4px;
+  font-size: 16px;
+}
+.rn .staff-panel .tbtn.primary {
+  min-height: 46px;
+  margin-left: 0;
+}
+.rn .staff-panel .tbtn:disabled {
+  cursor: wait;
+}
+.rn .staff-panel .staff-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rn .staff-form .staff-secondary {
+  margin-top: -8px;
+}
+.rn .staff-panel > .staff-secondary,
+.rn .staff-panel .staff-action {
+  margin-top: 16px;
+}
+.rn .staff-error,
+.rn .staff-confirmation {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.rn .staff-panel > .staff-error,
+.rn .staff-confirmation {
+  margin-top: 16px;
+}
+.rn .staff-error {
+  background: #fff1ee;
+  color: #842c2c;
+}
+.rn .staff-confirmation {
+  background: #eef2e7;
+  color: #31462a;
+}
+.rn .staff-error:focus,
+.rn .staff-confirmation:focus {
+  outline: 2px solid var(--rule-gold);
+  outline-offset: 3px;
 }
 
 .rn footer.app {

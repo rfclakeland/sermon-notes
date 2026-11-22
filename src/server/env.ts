@@ -1,3 +1,8 @@
+export interface D1Result<T = Record<string, unknown>> {
+  results: T[];
+  meta: { changes: number };
+}
+
 export interface D1Prepared {
   bind(...values: unknown[]): D1Prepared;
   first<T = Record<string, unknown>>(): Promise<T | null>;
@@ -7,7 +12,7 @@ export interface D1Prepared {
 
 export interface D1Like {
   prepare(sql: string): D1Prepared;
-  batch(statements: D1Prepared[]): Promise<unknown>;
+  batch(statements: D1Prepared[]): Promise<D1Result[]>;
 }
 
 export interface R2Like {
@@ -19,12 +24,36 @@ export interface R2Like {
   get(key: string): Promise<{ arrayBuffer(): Promise<ArrayBuffer> } | null>;
 }
 
+export interface AuthMailer {
+  send(message: {
+    from: { email: string; name: string };
+    to: string;
+    subject: string;
+    text: string;
+  }): Promise<unknown>;
+}
+
 export type WorkerEnv = {
   DB?: D1Like;
   COVERS?: R2Like;
+  AUTH_DB?: D1Like;
   AUTH_SECRET?: string;
-  STAFF_PASSWORD?: string;
+  APP_ORIGIN?: string;
+  AUTH_MAILER?: AuthMailer;
+  AUTH_FROM_ADDRESS?: string;
 };
+
+type WorkerRequest = Request & {
+  runtime?: { cloudflare?: { env?: Record<string, unknown> } };
+  waitUntil?: (work: Promise<unknown>) => void;
+};
+
+export function continueInWorker(request: Request, work: Promise<void>) {
+  const { waitUntil } = request as WorkerRequest;
+  if (waitUntil) waitUntil(work);
+  else return work;
+  return undefined;
+}
 
 function isD1(value: unknown): value is D1Like {
   return !!value && typeof value === "object" && "prepare" in value && "batch" in value;
@@ -34,35 +63,21 @@ function isR2(value: unknown): value is R2Like {
   return !!value && typeof value === "object" && "put" in value && "get" in value;
 }
 
-function bindingString(raw: Record<string, unknown>, key: "AUTH_SECRET" | "STAFF_PASSWORD") {
-  const bound = raw[key];
-  if (typeof bound === "string" && bound.length > 0) return bound;
-  if (
-    typeof process !== "undefined" &&
-    typeof process.env?.[key] === "string" &&
-    process.env[key]
-  ) {
-    return process.env[key];
-  }
-  return undefined;
-}
-
-/** Bindings from the Worker, or dev vars when `vite dev` has no platform proxy. */
-export function readEnv(request?: Request): WorkerEnv {
-  const fromRequest = request as Request & {
-    runtime?: { cloudflare?: { env?: Record<string, unknown> } };
-  };
-  const runtimeEnv = fromRequest?.runtime?.cloudflare?.env;
+/** Nitro exposes bindings on the request and on the Worker global. */
+export function readEnv(request: Request): WorkerEnv {
+  const runtimeEnv = (request as WorkerRequest).runtime?.cloudflare?.env;
   const globalEnv = (globalThis as { __env__?: Record<string, unknown> }).__env__;
-  const raw = runtimeEnv && Object.keys(runtimeEnv).length > 0 ? runtimeEnv : (globalEnv ?? {});
-  const auth = bindingString(raw, "AUTH_SECRET");
-  const password = bindingString(raw, "STAFF_PASSWORD");
-  const db = raw["DB"];
-  const covers = raw["COVERS"];
+  const { DB, COVERS, AUTH_DB, AUTH_SECRET, APP_ORIGIN, AUTH_MAILER, AUTH_FROM_ADDRESS } =
+    runtimeEnv ?? globalEnv ?? {};
   return {
-    ...(isD1(db) ? { DB: db } : {}),
-    ...(isR2(covers) ? { COVERS: covers } : {}),
-    ...(auth ? { AUTH_SECRET: auth } : {}),
-    ...(password ? { STAFF_PASSWORD: password } : {}),
+    ...(isD1(DB) ? { DB } : {}),
+    ...(isR2(COVERS) ? { COVERS } : {}),
+    ...(isD1(AUTH_DB) ? { AUTH_DB } : {}),
+    ...(typeof AUTH_SECRET === "string" ? { AUTH_SECRET } : {}),
+    ...(typeof APP_ORIGIN === "string" ? { APP_ORIGIN } : {}),
+    ...(AUTH_MAILER && typeof (AUTH_MAILER as AuthMailer).send === "function"
+      ? { AUTH_MAILER: AUTH_MAILER as AuthMailer }
+      : {}),
+    ...(typeof AUTH_FROM_ADDRESS === "string" ? { AUTH_FROM_ADDRESS } : {}),
   };
 }

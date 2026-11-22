@@ -1,0 +1,44 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Local Wrangler only. These IDs identify disposable emulated databases.
+  "name": "restoration-notes-local",
+  "main": ".output/server/index.mjs",
+  "compatibility_date": "2026-11-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "no_bundle": true,
+  "rules": [{ "type": "ESModule", "globs": ["**/*.mjs", "**/*.js"] }],
+  "assets": { "binding": "ASSETS", "directory": ".output/public" },
+  "vars": {
+    "APP_ORIGIN": "https://127.0.0.1:8787",
+    "AUTH_FROM_ADDRESS": "media@rfclakeland.com",
+  },
+  "send_email": [
+    {
+      "name": "AUTH_MAILER",
+      "allowed_sender_addresses": ["media@rfclakeland.com"],
+      "remote": false,
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "notes-content-local",
+      "database_id": "00000000-0000-4000-8000-000000000001",
+      "migrations_dir": "migrations",
+      "remote": false,
+    },
+    {
+      "binding": "AUTH_DB",
+      "database_name": "notes-identity-local",
+      "database_id": "00000000-0000-4000-8000-000000000002",
+      "remote": false,
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "COVERS",
+      "bucket_name": "notes-covers-local",
+      "remote": false,
+    },
+  ],
+}

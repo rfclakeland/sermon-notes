@@ -18,10 +18,13 @@ import { Route as ApiLoginRouteImport } from './routes/api.login'
 import { Route as ApiLogoutRouteImport } from './routes/api.logout'
 import { Route as ApiSermonsRouteImport } from './routes/api.sermons'
 import { Route as ApiSessionRouteImport } from './routes/api.session'
+import { Route as LoginLinkRouteImport } from './routes/login.link'
 import { Route as SermonsSermonIdRouteImport } from './routes/sermons.$sermonId'
 import { Route as AdminPreviewSermonIdRouteImport } from './routes/admin.preview.$sermonId'
 import { Route as AdminSermonsSermonIdRouteImport } from './routes/admin.sermons.$sermonId'
 import { Route as ApiCoversCoverIdRouteImport } from './routes/api.covers.$coverId'
+import { Route as ApiLinkConsumeRouteImport } from './routes/api.link.consume'
+import { Route as ApiLinkRequestRouteImport } from './routes/api.link.request'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -68,6 +71,11 @@ const ApiSessionRoute = ApiSessionRouteImport.update({
   path: '/api/session',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginLinkRoute = LoginLinkRouteImport.update({
+  id: '/login/link',
+  path: '/login/link',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SermonsSermonIdRoute = SermonsSermonIdRouteImport.update({
   id: '/sermons/$sermonId',
   path: '/sermons/$sermonId',
@@ -88,6 +96,16 @@ const ApiCoversCoverIdRoute = ApiCoversCoverIdRouteImport.update({
   path: '/$coverId',
   getParentRoute: () => ApiCoversRoute,
 } as any)
+const ApiLinkConsumeRoute = ApiLinkConsumeRouteImport.update({
+  id: '/api/link/consume',
+  path: '/api/link/consume',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLinkRequestRoute = ApiLinkRequestRouteImport.update({
+  id: '/api/link/request',
+  path: '/api/link/request',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -98,11 +116,14 @@ export interface FileRoutesByFullPath {
   '/api/logout': typeof ApiLogoutRoute
   '/api/sermons': typeof ApiSermonsRoute
   '/api/session': typeof ApiSessionRoute
+  '/login/link': typeof LoginLinkRoute
   '/sermons/$sermonId': typeof SermonsSermonIdRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/preview/$sermonId': typeof AdminPreviewSermonIdRoute
   '/admin/sermons/$sermonId': typeof AdminSermonsSermonIdRoute
   '/api/covers/$coverId': typeof ApiCoversCoverIdRoute
+  '/api/link/consume': typeof ApiLinkConsumeRoute
+  '/api/link/request': typeof ApiLinkRequestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -113,11 +134,14 @@ export interface FileRoutesByTo {
   '/api/logout': typeof ApiLogoutRoute
   '/api/sermons': typeof ApiSermonsRoute
   '/api/session': typeof ApiSessionRoute
+  '/login/link': typeof LoginLinkRoute
   '/sermons/$sermonId': typeof SermonsSermonIdRoute
   '/admin': typeof AdminIndexRoute
   '/admin/preview/$sermonId': typeof AdminPreviewSermonIdRoute
   '/admin/sermons/$sermonId': typeof AdminSermonsSermonIdRoute
   '/api/covers/$coverId': typeof ApiCoversCoverIdRoute
+  '/api/link/consume': typeof ApiLinkConsumeRoute
+  '/api/link/request': typeof ApiLinkRequestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -129,11 +153,14 @@ export interface FileRoutesById {
   '/api/logout': typeof ApiLogoutRoute
   '/api/sermons': typeof ApiSermonsRoute
   '/api/session': typeof ApiSessionRoute
+  '/login/link': typeof LoginLinkRoute
   '/sermons/$sermonId': typeof SermonsSermonIdRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/preview/$sermonId': typeof AdminPreviewSermonIdRoute
   '/admin/sermons/$sermonId': typeof AdminSermonsSermonIdRoute
   '/api/covers/$coverId': typeof ApiCoversCoverIdRoute
+  '/api/link/consume': typeof ApiLinkConsumeRoute
+  '/api/link/request': typeof ApiLinkRequestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -146,11 +173,14 @@ export interface FileRouteTypes {
     | '/api/logout'
     | '/api/sermons'
     | '/api/session'
+    | '/login/link'
     | '/sermons/$sermonId'
     | '/admin/'
     | '/admin/preview/$sermonId'
     | '/admin/sermons/$sermonId'
     | '/api/covers/$coverId'
+    | '/api/link/consume'
+    | '/api/link/request'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -161,11 +191,14 @@ export interface FileRouteTypes {
     | '/api/logout'
     | '/api/sermons'
     | '/api/session'
+    | '/login/link'
     | '/sermons/$sermonId'
     | '/admin'
     | '/admin/preview/$sermonId'
     | '/admin/sermons/$sermonId'
     | '/api/covers/$coverId'
+    | '/api/link/consume'
+    | '/api/link/request'
   id:
     | '__root__'
     | '/'
@@ -176,11 +209,14 @@ export interface FileRouteTypes {
     | '/api/logout'
     | '/api/sermons'
     | '/api/session'
+    | '/login/link'
     | '/sermons/$sermonId'
     | '/admin/'
     | '/admin/preview/$sermonId'
     | '/admin/sermons/$sermonId'
     | '/api/covers/$coverId'
+    | '/api/link/consume'
+    | '/api/link/request'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -192,10 +228,13 @@ export interface RootRouteChildren {
   ApiLogoutRoute: typeof ApiLogoutRoute
   ApiSermonsRoute: typeof ApiSermonsRoute
   ApiSessionRoute: typeof ApiSessionRoute
+  LoginLinkRoute: typeof LoginLinkRoute
   SermonsSermonIdRoute: typeof SermonsSermonIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminPreviewSermonIdRoute: typeof AdminPreviewSermonIdRoute
   AdminSermonsSermonIdRoute: typeof AdminSermonsSermonIdRoute
+  ApiLinkConsumeRoute: typeof ApiLinkConsumeRoute
+  ApiLinkRequestRoute: typeof ApiLinkRequestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -263,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSessionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login/link': {
+      id: '/login/link'
+      path: '/login/link'
+      fullPath: '/login/link'
+      preLoaderRoute: typeof LoginLinkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sermons/$sermonId': {
       id: '/sermons/$sermonId'
       path: '/sermons/$sermonId'
@@ -291,6 +337,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCoversCoverIdRouteImport
       parentRoute: typeof ApiCoversRoute
     }
+    '/api/link/consume': {
+      id: '/api/link/consume'
+      path: '/api/link/consume'
+      fullPath: '/api/link/consume'
+      preLoaderRoute: typeof ApiLinkConsumeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/link/request': {
+      id: '/api/link/request'
+      path: '/api/link/request'
+      fullPath: '/api/link/request'
+      preLoaderRoute: typeof ApiLinkRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -315,10 +375,13 @@ const rootRouteChildren: RootRouteChildren = {
   ApiLogoutRoute: ApiLogoutRoute,
   ApiSermonsRoute: ApiSermonsRoute,
   ApiSessionRoute: ApiSessionRoute,
+  LoginLinkRoute: LoginLinkRoute,
   SermonsSermonIdRoute: SermonsSermonIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminPreviewSermonIdRoute: AdminPreviewSermonIdRoute,
   AdminSermonsSermonIdRoute: AdminSermonsSermonIdRoute,
+  ApiLinkConsumeRoute: ApiLinkConsumeRoute,
+  ApiLinkRequestRoute: ApiLinkRequestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
