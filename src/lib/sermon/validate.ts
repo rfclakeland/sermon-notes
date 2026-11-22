@@ -2,6 +2,7 @@ import { sanitizeDoc } from "./delta";
 import type { Sermon, SermonCollection, SermonStatus } from "./types";
 
 export const SERMON_ID_RE = /^[a-z0-9][a-z0-9-]{0,79}$/;
+export const SERIES_MAX_LENGTH = 300;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** A passage reference is a short citation, not a pasted translation. */
@@ -57,6 +58,7 @@ export function validateSermon(raw: unknown, index = 0): Sermon {
       throw new Error(`${where}: ${(e as Error).message}`);
     }
   }
+  const series = str(r.series, "series", SERIES_MAX_LENGTH).trim();
   const scripture = str(r.scripture, "scripture");
   const reference = str(r.reference, "reference");
   if (looksLikeEmbeddedVerse(scripture) || looksLikeEmbeddedVerse(reference)) {
@@ -67,6 +69,7 @@ export function validateSermon(raw: unknown, index = 0): Sermon {
     title: r.title.trim().slice(0, 200),
     date: r.date,
     speaker: str(r.speaker, "speaker"),
+    ...(series ? { series } : {}),
     scripture,
     reference,
     status,

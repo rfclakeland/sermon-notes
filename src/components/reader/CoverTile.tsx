@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { Link } from "@tanstack/react-router";
 import { draftHasContent, loadDraft } from "@/lib/sermon/drafts";
 import { getSermonDoc, listBlanks } from "@/lib/sermon/delta";
@@ -13,12 +14,15 @@ export function filledCount(sermon: Sermon) {
 
 export function CoverTile({ sermon, small = false }: { sermon: Sermon; small?: boolean }) {
   const notes = filledCount(sermon);
+  const titleId = useId();
   return (
-    <Link
-      to="/sermons/$sermonId"
-      params={{ sermonId: sermon.id }}
-      className={small ? "tile sm" : "tile"}
-    >
+    <div className={`tile${small ? " sm" : ""}${sermon.cover ? "" : " typographic"}`}>
+      <Link
+        to="/sermons/$sermonId"
+        params={{ sermonId: sermon.id }}
+        className="tile-link"
+        aria-labelledby={titleId}
+      />
       {sermon.cover ? (
         <img src={sermon.cover} alt="" loading="lazy" width={960} height={600} />
       ) : null}
@@ -27,13 +31,22 @@ export function CoverTile({ sermon, small = false }: { sermon: Sermon; small?: b
           Notes saved · {notes.filled} of {notes.total}
         </span>
       ) : null}
-      <span className="cap">
+      <div className="cap">
         <span className="ref">{sermon.scripture}</span>
-        <h3>{sermon.title}</h3>
+        <h3 id={titleId}>{sermon.title}</h3>
         <span className="date">
-          {formatDate(sermon.date)} · {sermon.speaker}
+          {formatDate(sermon.date)}
+          {sermon.speaker ? ` · ${sermon.speaker}` : null}
+          {sermon.series ? (
+            <>
+              {" · "}
+              <Link to="/archive" search={{ series: sermon.series }} className="tile-series">
+                {sermon.series}
+              </Link>
+            </>
+          ) : null}
         </span>
-      </span>
-    </Link>
+      </div>
+    </div>
   );
 }

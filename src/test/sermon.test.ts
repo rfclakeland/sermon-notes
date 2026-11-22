@@ -7,12 +7,21 @@ import {
   sermonExtensions,
 } from "@/components/admin/editor/extensions";
 import { demoSermons } from "@/lib/sermon/demo-data";
-import { getSermonDoc, legacyToDelta, listBlanks, sanitizeDoc } from "@/lib/sermon/delta";
+import {
+  docToPlainText,
+  getSermonDoc,
+  groupLines,
+  legacyToDelta,
+  listBlanks,
+  opsToLines,
+  sanitizeDoc,
+} from "@/lib/sermon/delta";
 import { draftKey } from "@/lib/sermon/drafts";
 import { buildNotesText, mailtoHref } from "@/lib/sermon/export";
 import { matchesSermon, sermonFromHash } from "@/lib/sermon/search";
 import { deltaToTiptap, tiptapToDelta } from "@/lib/sermon/tiptap-adapter";
 import type { SermonDoc } from "@/lib/sermon/types";
+import { SERIES_MAX_LENGTH, validateSermon } from "@/lib/sermon/validate";
 
 const roof = () => demoSermons().find((s) => s.id === "roof-opened")!;
 
@@ -99,10 +108,33 @@ describe("visitor notes", () => {
   });
 });
 
+describe("sermon series validation", () => {
+  it("preserves a series name through a JSON round trip", () => {
+    const sermon = validateSermon({ ...roof(), series: "  Life Together  " });
+    expect(validateSermon(JSON.parse(JSON.stringify(sermon))).series).toBe("Life Together");
+  });
+
+  it("accepts omitted and blank series names", () => {
+    expect(validateSermon(roof())).not.toHaveProperty("series");
+    expect(validateSermon({ ...roof(), series: "  " })).not.toHaveProperty("series");
+  });
+
+  it("limits series names and rejects non-text values", () => {
+    const series = "a".repeat(SERIES_MAX_LENGTH);
+    expect(validateSermon({ ...roof(), series: series + "extra" }).series).toBe(series);
+    expect(() => validateSermon({ ...roof(), series: 123 })).toThrow('"series" must be text');
+  });
+});
+
 describe("links and search", () => {
   it("supports existing /#sermon= links", () => {
     expect(sermonFromHash("#sermon=hole-in-the-roof")).toBe("hole-in-the-roof");
   });
+  it("searches series names case-insensitively", () => {
+    expect(matchesSermon({ ...roof(), series: "Life Together" }, "life together")).toBe(true);
+    expect(matchesSermon(roof(), "life together")).toBe(false);
+  });
+
   it("searches speaker, Scripture and month", () => {
     const all = demoSermons();
     expect(all.filter((s) => matchesSermon(s, "pastor")).length).toBe(all.length);
@@ -138,5 +170,40 @@ describe("editor blanks", () => {
     removeBlank(ed, 1);
     expect(ed.getText()).toBe("Jesus heals");
     ed.destroy();
+  });
+});
+
+describe("imported outline lists", () => {
+  it("skips empty list lines in grouped outlines and plain-text exports", () => {
+    const doc: SermonDoc = {
+      ops: [
+        { insert: "God " },
+        { insert: { blank: { id: "shepherd", answer: "is", multiline: false } } },
+        { insert: " shepherding me." },
+        { insert: "\n", attributes: { list: "ordered" } },
+        { insert: "\nHebrew “Yahweh” …", attributes: { list: "ordered" } },
+        { insert: "\n", attributes: { list: "ordered" } },
+      ],
+    };
+    const lines = opsToLines(doc.ops);
+
+    expect(groupLines(lines)).toEqual([
+      { type: "list", ordered: true, items: [lines[0], lines[2]] },
+    ]);
+    expect(docToPlainText(doc, () => "is")).toBe("1. God is shepherding me.\n2. Hebrew “Yahweh” …");
+  });
+
+  it("drops whitespace-only lists but keeps items made entirely of a blank", () => {
+    const doc: SermonDoc = {
+      ops: [
+        { insert: " \t\n", attributes: { list: "bullet" } },
+        { insert: { blank: { id: "response", answer: "", multiline: false } } },
+        { insert: "\n", attributes: { list: "ordered" } },
+      ],
+    };
+    const lines = opsToLines(doc.ops);
+
+    expect(groupLines(lines)).toEqual([{ type: "list", ordered: true, items: [lines[1]] }]);
+    expect(docToPlainText(doc, () => "")).toBe("1. ________");
   });
 });

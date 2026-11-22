@@ -32,6 +32,7 @@ export type Sermon = {
   title: string;
   date: string; // YYYY-MM-DD
   speaker: string;
+  series?: string;
   scripture: string;
   reference: string;
   /** New records set this explicitly. Drafts stay off public lists. */

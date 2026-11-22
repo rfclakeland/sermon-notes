@@ -149,9 +149,14 @@ export function linesToOps(lines: Line[]): DeltaOp[] {
   return ops;
 }
 
+export function isEmptyLine(line: Line): boolean {
+  return !line.segments.some((segment) => segment.kind === "blank" || segment.text.trim());
+}
+
 export function groupLines(lines: Line[]): Block[] {
   const blocks: Block[] = [];
   for (const line of lines) {
+    if (line.attrs.list && isEmptyLine(line)) continue;
     const last = blocks.at(-1);
     if (line.attrs.blockquote) {
       if (last?.type === "quote") last.lines.push(line);
@@ -200,6 +205,7 @@ export function docToPlainText(doc: SermonDoc, valueFor: (b: BlankData) => strin
   let prevList: string | null = null;
   for (const line of opsToLines(doc.ops)) {
     const list = line.attrs.list ?? null;
+    if (list && isEmptyLine(line)) continue;
     if (list === "ordered") n = prevList === "ordered" ? n + 1 : 1;
     prevList = list;
     const text = line.segments

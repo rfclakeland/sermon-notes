@@ -49,7 +49,7 @@ export function devMemoryStore() {
   return devStore;
 }
 
-type SermonRow = { payload: string };
+type CollectionRow = { payload: string | null; revision: string };
 type MetaRow = { value: string };
 
 let seeding: Promise<void> | undefined;
@@ -91,35 +91,77 @@ async function ensureSeeded(db: D1Like) {
 }
 
 export function createD1Store(db: D1Like, covers?: R2Like): SermonStore {
+  async function list() {
+    await ensureSeeded(db);
+    // Read the revision and rows from the same snapshot.
+    const { results } = await db
+      .prepare(
+        "SELECT sermons.payload, app_meta.value AS revision FROM app_meta LEFT JOIN sermons ON 1 = 1 WHERE app_meta.key = 'revision'",
+      )
+      .all<CollectionRow>();
+    const sermons = sortNewestFirst(
+      results.flatMap(({ payload }) => (payload === null ? [] : [JSON.parse(payload) as Sermon])),
+    );
+    return validateCollection({ sermons, revision: Number(results[0]?.revision ?? "1") });
+  }
+
   return {
-    async list() {
-      await ensureSeeded(db);
-      const rows = await db.prepare("SELECT payload FROM sermons").all<SermonRow>();
-      const sermons = sortNewestFirst(rows.results.map((row) => JSON.parse(row.payload) as Sermon));
-      const revisionRow = await db
-        .prepare("SELECT value FROM app_meta WHERE key = 'revision'")
-        .first<MetaRow>();
-      const revision = Number(revisionRow?.value ?? "1");
-      return validateCollection({ sermons, revision: Number.isFinite(revision) ? revision : 1 });
-    },
+    list,
+    // codex/builder-publishing also guards this save atomically. Keep the incremental writes when merging.
     async save(sermons, revision) {
-      await ensureSeeded(db);
-      const current = await db
-        .prepare("SELECT value FROM app_meta WHERE key = 'revision'")
-        .first<MetaRow>();
-      const currentRevision = Number(current?.value ?? "0");
-      if (revision !== currentRevision) throw new ConflictError();
-      const next = currentRevision + 1;
-      const sorted = sortNewestFirst(sermons);
-      await db.batch([
-        db.prepare("DELETE FROM sermons"),
-        ...sorted.map((sermon) =>
+      const current = await list();
+      if (revision !== current.revision) throw new ConflictError();
+
+      const { sermons: validated } = validateCollection({ sermons, revision });
+      const sorted = sortNewestFirst(validated);
+      const previous = new Map(current.sermons.map((sermon) => [sermon.id, JSON.stringify(sermon)]));
+      const writes = sorted.flatMap((sermon) => {
+        const payload = JSON.stringify(sermon);
+        const unchanged = previous.get(sermon.id) === payload;
+        previous.delete(sermon.id);
+        return unchanged ? [] : [[sermon.id, sermon.date, sermon.status, payload]];
+      });
+      const removed = [...previous.keys()];
+      const expected = String(revision);
+      const guard = "(SELECT value FROM app_meta WHERE key = 'revision') = ?";
+      const statements = [];
+
+      // Group bulk changes while staying within D1's 100 parameters per statement.
+      const writeSize = 24; // Four parameters per row, plus the revision guard.
+      for (let i = 0; i < writes.length; i += writeSize) {
+        const rows = writes.slice(i, i + writeSize);
+        const values = rows.map(() => "(?, ?, ?, ?)").join(", ");
+        statements.push(
           db
-            .prepare("INSERT INTO sermons (id, date, status, payload) VALUES (?, ?, ?, ?)")
-            .bind(sermon.id, sermon.date, sermon.status, JSON.stringify(sermon)),
-        ),
-        db.prepare("UPDATE app_meta SET value = ? WHERE key = 'revision'").bind(String(next)),
+            .prepare(
+              `WITH changed(id, date, status, payload) AS (VALUES ${values})
+               INSERT INTO sermons (id, date, status, payload)
+               SELECT id, date, status, payload FROM changed WHERE ${guard}
+               ON CONFLICT(id) DO UPDATE SET
+                 date = excluded.date, status = excluded.status, payload = excluded.payload`,
+            )
+            .bind(...rows.flat(), expected),
+        );
+      }
+      const deleteSize = 99;
+      for (let i = 0; i < removed.length; i += deleteSize) {
+        const ids = removed.slice(i, i + deleteSize);
+        const placeholders = ids.map(() => "?").join(", ");
+        statements.push(
+          db
+            .prepare(`DELETE FROM sermons WHERE id IN (${placeholders}) AND ${guard}`)
+            .bind(...ids, expected),
+        );
+      }
+
+      const next = revision + 1;
+      const results = await db.batch([
+        ...statements,
+        db
+          .prepare("UPDATE app_meta SET value = ? WHERE key = 'revision' AND value = ?")
+          .bind(String(next), expected),
       ]);
+      if (results.at(-1)?.meta.changes !== 1) throw new ConflictError();
       return { sermons: sorted, revision: next };
     },
     async putCover(id, bytes) {

@@ -7,7 +7,7 @@ export interface D1Prepared {
 
 export interface D1Like {
   prepare(sql: string): D1Prepared;
-  batch(statements: D1Prepared[]): Promise<unknown>;
+  batch(statements: D1Prepared[]): Promise<{ meta: { changes: number } }[]>;
 }
 
 export interface R2Like {

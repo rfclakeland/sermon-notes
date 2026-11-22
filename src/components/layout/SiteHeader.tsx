@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { CHURCH_NAME, SAMPLE_NOTICE } from "@/lib/sermon/export";
+import { CHURCH_NAME, PREVIEW_NOTICE } from "@/lib/sermon/export";
 import { useSermons } from "@/lib/sermon/queries";
 
 export function SiteHeader() {
@@ -40,7 +40,7 @@ export function SiteFooter() {
         <div>
           <strong>{CHURCH_NAME}</strong>
           <p>
-            {SAMPLE_NOTICE} Your answers save automatically in this browser. No account and no
+            {PREVIEW_NOTICE} Your answers save automatically in this browser. No account and no
             syncing across devices. Clearing browser data can remove them — download a copy to keep
             them.
           </p>

@@ -120,37 +120,18 @@
 }
 
 .rn .hero {
-  position: relative;
-  /* Shorter on desktop so the first blanks sit closer to the fold. */
-  height: clamp(380px, 54vh, 560px);
-  background: var(--night);
-  color: var(--on-dark);
-  overflow: hidden;
+  background: var(--parchment);
+  color: var(--ink);
 }
 .rn .hero img {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
-  height: 100%;
+  height: clamp(380px, 54vh, 560px);
   object-fit: cover;
   object-position: center 40%;
 }
-.rn .hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(to top, rgba(10, 11, 14, 0.94) 0%, rgba(10, 11, 14, 0.78) 24%, rgba(10, 11, 14, 0.34) 52%, rgba(10, 11, 14, 0.05) 74%, rgba(10, 11, 14, 0.18) 100%),
-    linear-gradient(to right, rgba(10, 11, 14, 0.55) 0%, rgba(10, 11, 14, 0) 60%);
-}
 .rn .hero .wrap {
-  position: relative;
-  z-index: 1;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding-bottom: clamp(28px, 5vh, 56px);
+  padding-block: clamp(24px, 5vw, 64px);
 }
 .rn .eyebrow {
   display: flex;
@@ -160,14 +141,14 @@
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--gold-light);
+  color: var(--gold-text);
   margin: 0 0 14px;
 }
 .rn .eyebrow::before {
   content: "";
   width: 38px;
   height: 1px;
-  background: var(--gold-light);
+  background: var(--gold);
 }
 .rn .hero h1 {
   font-family: var(--display);
@@ -179,7 +160,6 @@
   margin: 0;
   max-width: 14ch;
   text-wrap: balance;
-  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.35);
 }
 .rn .hero .byline {
   display: flex;
@@ -188,12 +168,12 @@
   gap: 6px 18px;
   margin-top: 22px;
   font-size: 16px;
-  color: var(--on-dark);
+  color: var(--ink);
 }
 .rn .hero .byline .sep {
   width: 4px;
   height: 4px;
-  background: var(--gold-light);
+  background: var(--gold);
   transform: rotate(45deg);
 }
 .rn .hero .byline a {
@@ -202,9 +182,9 @@
   font-family: var(--display);
   font-style: italic;
   font-size: 19px;
-  color: var(--gold-light);
+  color: var(--gold-text);
   text-decoration: none;
-  border-bottom: 1px solid rgba(214, 182, 121, 0.5);
+  border-bottom: 1px solid var(--rule-gold);
   min-height: 44px;
   padding: 4px 0 2px;
 }
@@ -610,35 +590,32 @@
 .rn .tile {
   position: relative;
   display: block;
-  aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: var(--night);
-  color: var(--on-dark);
+  background: var(--paper);
+  color: var(--ink);
   text-decoration: none;
 }
 .rn .tile img {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
-  transition: transform 0.6s ease;
 }
-.rn .tile:hover img {
-  transform: scale(1.03);
-}
-.rn .tile::after {
-  content: "";
+.rn .tile .tile-link {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(10, 11, 14, 0.92) 0%, rgba(10, 11, 14, 0.6) 34%, rgba(10, 11, 14, 0.08) 68%);
+  z-index: 1;
+}
+.rn .tile .tile-link:focus-visible {
+  outline: 2px solid var(--rule-gold);
+  outline-offset: -3px;
 }
 .rn .tile .cap {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  overflow-wrap: anywhere;
   padding: 22px 24px;
 }
 .rn .tile .ref {
@@ -646,7 +623,7 @@
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--gold-light);
+  color: var(--gold-text);
 }
 .rn .tile h3 {
   font-family: var(--display);
@@ -659,13 +636,21 @@
 }
 .rn .tile .date {
   font-size: 14px;
-  color: var(--on-dark-muted);
+  color: var(--ink);
+}
+.rn .tile .tile-series {
+  pointer-events: auto;
+  color: var(--gold-text);
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+  overflow-wrap: anywhere;
 }
 .rn .tile .badge {
   position: absolute;
   z-index: 1;
   top: 16px;
   left: 16px;
+  pointer-events: none;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -689,6 +674,46 @@
 }
 .rn .tile.sm .cap {
   padding: 16px 18px;
+}
+
+.rn .tile.typographic {
+  border-top: 1px solid var(--rule-gold);
+}
+.rn .tile.typographic:hover,
+.rn .tile.typographic:focus-within {
+  background: var(--parchment);
+}
+.rn .tile.typographic .badge {
+  position: static;
+  margin: 12px 0 0 16px;
+  padding: 3px 8px;
+  background: var(--parchment);
+  border-color: var(--rule-gold);
+  backdrop-filter: none;
+  color: var(--ink);
+}
+.rn .tile.typographic .badge::before,
+.rn .loading-lines span {
+  background: var(--gold);
+}
+.rn .loading-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.rn .loading-lines span {
+  display: block;
+  width: min(8rem, 40%);
+  height: 0.65rem;
+  opacity: 0.25;
+}
+.rn .loading-lines span:nth-child(2) {
+  width: min(32rem, 80%);
+  height: 1.6rem;
+}
+.rn .loading-lines span:nth-child(3) {
+  width: min(18rem, 60%);
 }
 
 .rn .page-head {
@@ -760,6 +785,20 @@
 }
 .rn .search:focus {
   border-bottom: 2px solid var(--rule-gold);
+}
+.rn .series-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.rn .series-filter select {
+  min-width: 0;
+  max-width: min(18rem, 100%);
+  min-height: 44px;
+  font: inherit;
 }
 .rn .filters {
   display: flex;
@@ -1099,8 +1138,9 @@
   .rn header.app .wrap {
     padding-right: 8px;
   }
-  .rn .hero {
-    height: max(46vh, 360px);
+  .rn .hero img {
+    height: auto;
+    aspect-ratio: 16 / 10;
   }
   .rn .hero h1 {
     font-size: clamp(2.5rem, 11vw, 3.4rem);
@@ -1160,6 +1200,35 @@
   .rn .strip .tile:nth-child(n + 2) {
     display: none;
   }
+  .rn .archive-head {
+    padding: 24px 0 14px;
+    margin-bottom: 10px;
+  }
+  .rn .archive-head .eyebrow {
+    margin-bottom: 8px;
+  }
+  .rn .archive-head .lede {
+    margin-top: 10px;
+    font-size: 17px;
+    line-height: 1.4;
+  }
+  .rn .finder {
+    gap: 4px 12px;
+    margin-bottom: 12px;
+  }
+  .rn .finder .search {
+    min-height: 44px;
+  }
+  .rn .finder .series-filter select {
+    min-height: 44px;
+  }
+  .rn .finder ~ .grid2 {
+    gap: 12px;
+  }
+  .rn .tile .cap,
+  .rn .tile.sm .cap {
+    padding: 14px 16px;
+  }
   .rn .page-head.split,
   .rn .entry {
     grid-template-columns: 1fr;
@@ -1213,11 +1282,6 @@
     right: 5px;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .rn .tile img {
-    transition: none;
-  }
-}
 @media print {
   .rn header.app,
   .rn .persist,
@@ -1227,12 +1291,10 @@
     display: none !important;
   }
   .rn .hero {
-    height: auto;
     color: var(--ink);
     background: none;
   }
-  .rn .hero img,
-  .rn .hero::after {
+  .rn .hero img {
     display: none;
   }
   .rn .blank {

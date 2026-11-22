@@ -15,6 +15,7 @@ export function matchesSermon(s: Sermon, q: string) {
     [
       s.title,
       s.speaker,
+      s.series,
       s.scripture,
       s.reference,
       s.date,
