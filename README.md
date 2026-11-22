@@ -27,6 +27,13 @@ npx wrangler secret put STAFF_PASSWORD
 
 For local Wrangler, copy `.dev.vars.example` to `.dev.vars`.
 
+## Builder publishing
+
+Builder sends sermon notes to `POST /api/builder/publish`. The Notes Worker requires the
+`BUILDER_PUBLISH_TOKEN` secret and the `PUBLIC_ORIGIN` variable for public links. See the
+[Builder publishing guide](docs/BUILDER-PUBLISHING.md) for both Workers’ settings, the API contract,
+and the acceptance test.
+
 ## Develop
 
 ```sh
