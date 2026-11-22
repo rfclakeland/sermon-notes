@@ -21,6 +21,7 @@ import { Route as ApiSessionRouteImport } from './routes/api.session'
 import { Route as SermonsSermonIdRouteImport } from './routes/sermons.$sermonId'
 import { Route as AdminPreviewSermonIdRouteImport } from './routes/admin.preview.$sermonId'
 import { Route as AdminSermonsSermonIdRouteImport } from './routes/admin.sermons.$sermonId'
+import { Route as ApiBuilderPublishRouteImport } from './routes/api.builder.publish'
 import { Route as ApiCoversCoverIdRouteImport } from './routes/api.covers.$coverId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -83,6 +84,11 @@ const AdminSermonsSermonIdRoute = AdminSermonsSermonIdRouteImport.update({
   path: '/admin/sermons/$sermonId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBuilderPublishRoute = ApiBuilderPublishRouteImport.update({
+  id: '/api/builder/publish',
+  path: '/api/builder/publish',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCoversCoverIdRoute = ApiCoversCoverIdRouteImport.update({
   id: '/$coverId',
   path: '/$coverId',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/admin/preview/$sermonId': typeof AdminPreviewSermonIdRoute
   '/admin/sermons/$sermonId': typeof AdminSermonsSermonIdRoute
+  '/api/builder/publish': typeof ApiBuilderPublishRoute
   '/api/covers/$coverId': typeof ApiCoversCoverIdRoute
 }
 export interface FileRoutesByTo {
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/admin/preview/$sermonId': typeof AdminPreviewSermonIdRoute
   '/admin/sermons/$sermonId': typeof AdminSermonsSermonIdRoute
+  '/api/builder/publish': typeof ApiBuilderPublishRoute
   '/api/covers/$coverId': typeof ApiCoversCoverIdRoute
 }
 export interface FileRoutesById {
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/admin/preview/$sermonId': typeof AdminPreviewSermonIdRoute
   '/admin/sermons/$sermonId': typeof AdminSermonsSermonIdRoute
+  '/api/builder/publish': typeof ApiBuilderPublishRoute
   '/api/covers/$coverId': typeof ApiCoversCoverIdRoute
 }
 export interface FileRouteTypes {
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/preview/$sermonId'
     | '/admin/sermons/$sermonId'
+    | '/api/builder/publish'
     | '/api/covers/$coverId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/preview/$sermonId'
     | '/admin/sermons/$sermonId'
+    | '/api/builder/publish'
     | '/api/covers/$coverId'
   id:
     | '__root__'
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/preview/$sermonId'
     | '/admin/sermons/$sermonId'
+    | '/api/builder/publish'
     | '/api/covers/$coverId'
   fileRoutesById: FileRoutesById
 }
@@ -196,6 +208,7 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminPreviewSermonIdRoute: typeof AdminPreviewSermonIdRoute
   AdminSermonsSermonIdRoute: typeof AdminSermonsSermonIdRoute
+  ApiBuilderPublishRoute: typeof ApiBuilderPublishRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -284,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSermonsSermonIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/builder/publish': {
+      id: '/api/builder/publish'
+      path: '/api/builder/publish'
+      fullPath: '/api/builder/publish'
+      preLoaderRoute: typeof ApiBuilderPublishRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/covers/$coverId': {
       id: '/api/covers/$coverId'
       path: '/$coverId'
@@ -319,6 +339,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminPreviewSermonIdRoute: AdminPreviewSermonIdRoute,
   AdminSermonsSermonIdRoute: AdminSermonsSermonIdRoute,
+  ApiBuilderPublishRoute: ApiBuilderPublishRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
