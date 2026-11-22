@@ -1,114 +1,126 @@
-import { Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { sermonService } from "@/lib/sermon/service";
+import { useEffect, useState, type ReactNode } from "react";
+import {
+  sermonService,
+  StaffAuthError,
+  type StaffIdentity,
+  type StaffSession,
+} from "@/lib/sermon/service";
+import { StaffError, StaffScreen, StaffSignIn } from "./StaffSignIn";
 
-type S = "loading" | "in" | "out";
+export type AdminSession = StaffIdentity & {
+  onSignOut: () => void;
+  signingOut: boolean;
+};
 
-export function useAdminSession() {
-  const [status, setStatus] = useState<S>("loading");
+const NO_ACCESS = "Your RFC account doesn’t have Notes editor access. Ask an administrator.";
+
+export function AdminGate({ children }: { children: (session: AdminSession) => ReactNode }) {
+  const [session, setSession] = useState<StaffSession | null>(null);
+  const [sessionError, setSessionError] = useState("");
+  const [signingOut, setSigningOut] = useState(false);
   const queryClient = useQueryClient();
+
+  const refresh = async () => {
+    setSessionError("");
+    try {
+      setSession(await sermonService.session());
+    } catch {
+      setSessionError("Couldn’t check your staff sign-in.");
+    }
+  };
+
   useEffect(() => {
-    sermonService.session().then((session) => setStatus(session.authenticated ? "in" : "out"));
+    let cancelled = false;
+    sermonService.session().then(
+      (result) => {
+        if (!cancelled) setSession(result);
+      },
+      () => {
+        if (!cancelled) setSessionError("Couldn’t check your staff sign-in.");
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
   }, []);
-  return {
-    status,
-    signIn: async (password: string) => {
-      const ok = await sermonService.login(password);
-      if (ok) {
-        setStatus("in");
-        await queryClient.invalidateQueries({ queryKey: ["sermons"] });
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      await sermonService.login(email, password);
+    } catch (error) {
+      if (error instanceof StaffAuthError && (error.status === 403 || error.status === 503)) {
+        setSession({ status: error.status === 403 ? "no-access" : "not-connected" });
+        return;
       }
-      return ok;
-    },
-    signOut: async () => {
+      throw error;
+    }
+    queryClient.removeQueries({ queryKey: ["sermons", "staff"] });
+    await refresh();
+  };
+
+  const signOut = async () => {
+    setSigningOut(true);
+    setSessionError("");
+    try {
       await sermonService.logout();
-      setStatus("out");
-      await queryClient.invalidateQueries({ queryKey: ["sermons"] });
-    },
+      setSession(null);
+      await queryClient.cancelQueries({ queryKey: ["sermons", "staff"] });
+      queryClient.removeQueries({ queryKey: ["sermons", "staff"] });
+      await refresh();
+    } catch {
+      setSessionError("Couldn’t sign out. Try again.");
+    } finally {
+      setSigningOut(false);
+    }
   };
-}
 
-function SignIn({ onSignIn }: { onSignIn: (password: string) => Promise<boolean> }) {
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    const ok = await onSignIn(password);
-    setBusy(false);
-    if (!ok) setError("That password wasn’t recognized.");
-  };
-  return (
-    <div className="rn">
-      <header className="app">
-        <div className="wrap">
-          <Link to="/" className="brand">
-            <strong>Restoration Notes</strong>
-            <span>Restoration Fellowship · Lakeland</span>
-          </Link>
-        </div>
-      </header>
-      <main id="main">
-        <div className="wrap">
-          <header className="page-head">
-            <p className="eyebrow">Church staff</p>
-            <h1>Staff sign in</h1>
-            <p className="lede">
-              Staff prepare sermon outlines here. Visitors don’t need an account, and their notes
-              stay in the browser.
-            </p>
-          </header>
-          <form className="staff-form" onSubmit={submit}>
-            <input
-              className="sr-only"
-              type="text"
-              name="username"
-              autoComplete="username"
-              defaultValue="staff"
-              tabIndex={-1}
-            />
-            <label htmlFor="pw">Password</label>
-            <input
-              id="pw"
-              type="password"
-              autoComplete="current-password"
-              className="search"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-            {error ? (
-              <p className="error" role="alert">
-                {error}
-              </p>
-            ) : null}
-            <button
-              type="submit"
-              className="tbtn primary"
-              style={{ marginTop: 18 }}
-              disabled={busy}
-            >
-              {busy ? "Signing in…" : "Sign in"}
-            </button>
-          </form>
-        </div>
-      </main>
-    </div>
-  );
-}
-
-export function AdminGate({ children }: { children: (signOut: () => void) => ReactNode }) {
-  const session = useAdminSession();
-  if (session.status === "loading") {
+  if (!session) {
     return (
-      <div className="flex min-h-screen items-center justify-center" aria-busy="true">
-        <p className="text-[15px] text-muted-foreground">Loading…</p>
-      </div>
+      <StaffScreen
+        title={sessionError ? "Staff sign-in is unavailable" : "Checking staff sign-in…"}
+        busy={!sessionError}
+      >
+        {sessionError && (
+          <>
+            <StaffError message={sessionError} />
+            <button className="tbtn staff-secondary" onClick={refresh}>
+              Try again
+            </button>
+          </>
+        )}
+      </StaffScreen>
     );
   }
-  if (session.status === "out") return <SignIn onSignIn={session.signIn} />;
-  return <>{children(session.signOut)}</>;
+  if (session.status === "not-connected") {
+    return (
+      <StaffScreen
+        title="Staff sign-in isn’t connected yet"
+        description="An administrator needs to connect Restoration Notes to RFC accounts."
+      />
+    );
+  }
+  if (session.status === "no-access") {
+    return (
+      <StaffScreen title="Notes editor access required" description={NO_ACCESS}>
+        <StaffError message={sessionError} />
+        <button className="tbtn primary staff-action" onClick={signOut} disabled={signingOut}>
+          {signingOut ? "Signing out…" : "Sign out"}
+        </button>
+      </StaffScreen>
+    );
+  }
+  if (session.status === "signed-out") {
+    return <StaffSignIn emailLinks={session.emailLinks} onSignIn={signIn} />;
+  }
+  return (
+    <>
+      {sessionError && (
+        <p className="px-5 py-2 text-destructive" role="alert">
+          {sessionError}
+        </p>
+      )}
+      {children({ ...session.identity, onSignOut: signOut, signingOut })}
+    </>
+  );
 }

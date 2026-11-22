@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Download, Eye, Loader2, Plus, Upload } from "lucide-react";
-import { AdminGate } from "@/components/admin/AdminGate";
+import { AdminGate, type AdminSession } from "@/components/admin/AdminGate";
 import { AdminTopBar } from "@/components/admin/AdminTopBar";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,12 +42,14 @@ export const Route = createFileRoute("/admin/")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: () => <AdminGate>{(signOut) => <AdminHome onSignOut={signOut} />}</AdminGate>,
+  component: () => <AdminGate>{(session) => <AdminHome session={session} />}</AdminGate>,
 });
 
 type Review = { incoming: SermonCollection; added: string[]; updated: string[]; removed: string[] };
 
-function AdminHome({ onSignOut }: { onSignOut: () => void }) {
+function AdminHome({ session }: { session: AdminSession }) {
+  const canEdit = session.permissions.includes("notes.sermons.edit");
+  const canDelete = session.permissions.includes("notes.sermons.delete");
   const q = useSermons("staff");
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -92,7 +94,7 @@ function AdminHome({ onSignOut }: { onSignOut: () => void }) {
   };
 
   const applyImport = async () => {
-    if (!review || !q.data) return;
+    if (!review || !q.data || !canEdit || (review.removed.length > 0 && !canDelete)) return;
     setBusy(true);
     try {
       const res = await sermonService.save(review.incoming.sermons, q.data.revision);
@@ -113,7 +115,7 @@ function AdminHome({ onSignOut }: { onSignOut: () => void }) {
 
   return (
     <div className="min-h-screen">
-      <AdminTopBar onSignOut={onSignOut} />
+      <AdminTopBar {...session} />
       <main className="mx-auto max-w-5xl px-5 pb-24 pt-12 md:px-8 md:pt-20">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
@@ -133,19 +135,23 @@ function AdminHome({ onSignOut }: { onSignOut: () => void }) {
                 <DropdownMenuItem className="h-11 gap-3 rounded-lg text-[15px]" onSelect={backup}>
                   <Download className="size-[18px]" /> Download JSON backup
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="h-11 gap-3 rounded-lg text-[15px]"
-                  onSelect={() => fileRef.current?.click()}
-                >
-                  <Upload className="size-[18px]" /> Import JSON backup…
-                </DropdownMenuItem>
+                {canEdit && (
+                  <DropdownMenuItem
+                    className="h-11 gap-3 rounded-lg text-[15px]"
+                    onSelect={() => fileRef.current?.click()}
+                  >
+                    <Upload className="size-[18px]" /> Import JSON backup…
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button asChild>
-              <Link to="/admin/sermons/$sermonId" params={{ sermonId: "new" }}>
-                <Plus aria-hidden /> New sermon
-              </Link>
-            </Button>
+            {canEdit && (
+              <Button asChild>
+                <Link to="/admin/sermons/$sermonId" params={{ sermonId: "new" }}>
+                  <Plus aria-hidden /> New sermon
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
         <input
@@ -173,7 +179,9 @@ function AdminHome({ onSignOut }: { onSignOut: () => void }) {
           <div className="mt-16">
             <p className="type-section">No sermons yet</p>
             <p className="mt-2 text-[17px] text-muted-foreground">
-              Create the first one, or import a backup.
+              {canEdit
+                ? "Create the first one, or import a backup."
+                : "Published sermons and drafts will appear here."}
             </p>
           </div>
         ) : (
@@ -184,7 +192,7 @@ function AdminHome({ onSignOut }: { onSignOut: () => void }) {
                 className="surface surface-hover flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-6"
               >
                 <Link
-                  to="/admin/sermons/$sermonId"
+                  to={canEdit ? "/admin/sermons/$sermonId" : "/admin/preview/$sermonId"}
                   params={{ sermonId: s.id }}
                   className="group flex min-w-0 flex-1 items-center gap-5 rounded-lg"
                 >
@@ -204,7 +212,7 @@ function AdminHome({ onSignOut }: { onSignOut: () => void }) {
                     />
                   )}
                   <span className="min-w-0">
-                    <span className="block truncate font-display text-[21px] font-semibold tracking-tight group-hover:text-primary">
+                    <span className="block break-words font-display text-[21px] font-semibold tracking-tight group-hover:text-primary sm:truncate">
                       {s.title}
                     </span>
                     <span className="mt-0.5 block text-[15px] text-muted-foreground">
@@ -226,11 +234,13 @@ function AdminHome({ onSignOut }: { onSignOut: () => void }) {
                       <Eye aria-hidden /> Preview
                     </Link>
                   </Button>
-                  <Button variant="soft" asChild>
-                    <Link to="/admin/sermons/$sermonId" params={{ sermonId: s.id }}>
-                      Edit
-                    </Link>
-                  </Button>
+                  {canEdit && (
+                    <Button variant="soft" asChild>
+                      <Link to="/admin/sermons/$sermonId" params={{ sermonId: s.id }}>
+                        Edit
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </li>
             ))}
@@ -263,6 +273,9 @@ function AdminHome({ onSignOut }: { onSignOut: () => void }) {
                     {review?.removed.length ? `: ${review.removed.join(", ")}` : ""}
                   </li>
                 </ul>
+                {review?.removed.length && !canDelete ? (
+                  <p>You don’t have permission to remove sermons through a backup.</p>
+                ) : null}
                 <p>
                   Sermon and blank ids are kept as-is, so visitors’ saved notes still match. Visitor
                   notes are not touched.
@@ -274,7 +287,10 @@ function AdminHome({ onSignOut }: { onSignOut: () => void }) {
             <AlertDialogCancel className="h-11 rounded-full" disabled={busy}>
               Cancel
             </AlertDialogCancel>
-            <Button onClick={applyImport} disabled={busy}>
+            <Button
+              onClick={applyImport}
+              disabled={busy || (!canDelete && !!review?.removed.length)}
+            >
               {busy && <Loader2 className="animate-spin" aria-hidden />} Replace collection
             </Button>
           </AlertDialogFooter>

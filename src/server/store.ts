@@ -114,7 +114,9 @@ export function createD1Store(db: D1Like, covers?: R2Like): SermonStore {
 
       const { sermons: validated } = validateCollection({ sermons, revision });
       const sorted = sortNewestFirst(validated);
-      const previous = new Map(current.sermons.map((sermon) => [sermon.id, JSON.stringify(sermon)]));
+      const previous = new Map(
+        current.sermons.map((sermon) => [sermon.id, JSON.stringify(sermon)]),
+      );
       const writes = sorted.flatMap((sermon) => {
         const payload = JSON.stringify(sermon);
         const unchanged = previous.get(sermon.id) === payload;

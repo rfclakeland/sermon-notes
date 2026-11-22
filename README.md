@@ -7,25 +7,15 @@ This repository is a **preview**. It is not the live church website.
 - Do not attach a custom domain.
 - Do not change DNS for `rfclakeland.com`.
 - Do not change Microsoft 365 mail.
-- The database is a new preview D1 database named `restoration-notes-preview`. It is not the church `rfc-church` database.
+- Sermon content uses the preview D1 database `restoration-notes-preview`. Staff identities use a separate binding to the church’s `rfc-church` database after owner approval.
 
 ## Preview content
 
 The ten sermons are **sample outlines**, not recordings of Restoration Fellowship services. The speaker on every sample is “Pastor.” Scripture is a reference plus a Bible Gateway link. The passage text is not embedded.
 
-## Staff secrets
+## Staff sign-in
 
-Set these on the preview Worker. Do not commit the values.
-
-- `AUTH_SECRET` — signs the HttpOnly session cookie
-- `STAFF_PASSWORD` — staff sign-in password
-
-```sh
-npx wrangler secret put AUTH_SECRET
-npx wrangler secret put STAFF_PASSWORD
-```
-
-For local Wrangler, copy `.dev.vars.example` to `.dev.vars`.
+Staff use their RFC account password or a one-time email link. See [Staff sign-in](docs/AUTH.md) for preview setup, permissions, and a local identity database with fictional accounts.
 
 ## Develop
 

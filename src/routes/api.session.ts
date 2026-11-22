@@ -4,7 +4,7 @@ export const Route = createFileRoute("/api/session")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const { handleSession } = await import("@/server/api");
+        const { handleSession } = await import("@/server/auth");
         return handleSession(request);
       },
     },
