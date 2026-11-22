@@ -1,6 +1,6 @@
 import { ConflictError } from "@/lib/sermon/service";
 import { publicSermons } from "@/lib/sermon/public";
-import { validateCollection } from "@/lib/sermon/validate";
+import { SERMON_ID_RE, validateCollection } from "@/lib/sermon/validate";
 import {
   authConfig,
   authError,
@@ -82,7 +82,8 @@ export async function handleCoverUpload(request: Request) {
 }
 
 export async function handleCoverGet(request: Request, coverId: string) {
-  if (!/^[0-9a-f-]{36}$/i.test(coverId)) return new Response("Not found", { status: 404 });
+  const isUuid = /^[0-9a-f-]{36}$/i.test(coverId);
+  if (!isUuid && !SERMON_ID_RE.test(coverId)) return new Response("Not found", { status: 404 });
   try {
     const bytes = await storeFor(readEnv(request)).getCover(coverId);
     if (!bytes) return new Response("Not found", { status: 404 });
