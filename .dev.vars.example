@@ -2,3 +2,5 @@
 # Set the same names on the preview Worker with `wrangler secret put`.
 AUTH_SECRET=
 STAFF_PASSWORD=
+
+BUILDER_PUBLISH_TOKEN=

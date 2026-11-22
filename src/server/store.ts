@@ -49,7 +49,7 @@ export function devMemoryStore() {
   return devStore;
 }
 
-type SermonRow = { payload: string };
+type SermonRow = { payload: string | null; revision: string };
 type MetaRow = { value: string };
 
 let seeding: Promise<void> | undefined;
@@ -94,32 +94,32 @@ export function createD1Store(db: D1Like, covers?: R2Like): SermonStore {
   return {
     async list() {
       await ensureSeeded(db);
-      const rows = await db.prepare("SELECT payload FROM sermons").all<SermonRow>();
-      const sermons = sortNewestFirst(rows.results.map((row) => JSON.parse(row.payload) as Sermon));
-      const revisionRow = await db
-        .prepare("SELECT value FROM app_meta WHERE key = 'revision'")
-        .first<MetaRow>();
-      const revision = Number(revisionRow?.value ?? "1");
-      return validateCollection({ sermons, revision: Number.isFinite(revision) ? revision : 1 });
+      const rows = await db.prepare(
+        "SELECT sermons.payload, app_meta.value AS revision FROM app_meta LEFT JOIN sermons ON 1 = 1 WHERE app_meta.key = 'revision'",
+      ).all<SermonRow>();
+      const sermons = sortNewestFirst(rows.results.flatMap((row) =>
+        row.payload === null ? [] : [JSON.parse(row.payload) as Sermon],
+      ));
+      return validateCollection({ sermons, revision: Number(rows.results[0]?.revision ?? "1") });
     },
     async save(sermons, revision) {
       await ensureSeeded(db);
-      const current = await db
-        .prepare("SELECT value FROM app_meta WHERE key = 'revision'")
-        .first<MetaRow>();
-      const currentRevision = Number(current?.value ?? "0");
-      if (revision !== currentRevision) throw new ConflictError();
-      const next = currentRevision + 1;
+      const guard = "(SELECT value FROM app_meta WHERE key = 'revision') = ?";
+      const expected = String(revision);
+      const next = revision + 1;
       const sorted = sortNewestFirst(sermons);
-      await db.batch([
-        db.prepare("DELETE FROM sermons"),
+      // D1 runs the batch atomically. Every statement checks the same old
+      // revision, so a concurrent save can never delete or replace rows here.
+      const results = await db.batch([
+        db.prepare(`DELETE FROM sermons WHERE ${guard}`).bind(expected),
         ...sorted.map((sermon) =>
           db
-            .prepare("INSERT INTO sermons (id, date, status, payload) VALUES (?, ?, ?, ?)")
-            .bind(sermon.id, sermon.date, sermon.status, JSON.stringify(sermon)),
+            .prepare(`INSERT INTO sermons (id, date, status, payload) SELECT ?, ?, ?, ? WHERE ${guard}`)
+            .bind(sermon.id, sermon.date, sermon.status, JSON.stringify(sermon), expected),
         ),
-        db.prepare("UPDATE app_meta SET value = ? WHERE key = 'revision'").bind(String(next)),
+        db.prepare("UPDATE app_meta SET value = ? WHERE key = 'revision' AND value = ?").bind(String(next), expected),
       ]);
+      if (results.at(-1)?.meta.changes !== 1) throw new ConflictError();
       return { sermons: sorted, revision: next };
     },
     async putCover(id, bytes) {
