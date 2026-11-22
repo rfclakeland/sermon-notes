@@ -2,16 +2,10 @@ import { ConflictError } from "@/lib/sermon/service";
 import { publicSermons } from "@/lib/sermon/public";
 import { validateCollection } from "@/lib/sermon/validate";
 import { clearSessionCookie, isStaff, passwordsMatch, sessionCookie, signSession } from "./auth";
-import { readEnv, type WorkerEnv } from "./env";
-import { createD1Store, devMemoryStore, type SermonStore } from "./store";
+import { readEnv } from "./env";
+import { storeFor } from "./store";
 
 const COVER_MAX = 2 * 1024 * 1024;
-
-function storeFor(env: WorkerEnv): SermonStore {
-  if (env.DB) return createD1Store(env.DB, env.COVERS);
-  if (import.meta.env.DEV) return devMemoryStore();
-  throw new Error("Database is not configured.");
-}
 
 function json(body: unknown, status = 200, headers?: HeadersInit) {
   return Response.json(body, headers ? { status, headers } : { status });
@@ -123,44 +117,5 @@ export async function handleCoverGet(request: Request, coverId: string) {
   } catch (error) {
     console.error(error);
     return new Response("Not found", { status: 404 });
-  }
-}
-
-export async function handleBuilderPublish(request: Request) {
-  const env = readEnv(request);
-  const token = request.headers.get("Authorization")?.match(/^Bearer (\S+)$/)?.[1] ?? "";
-  if (!env.BUILDER_PUBLISH_TOKEN || !(await passwordsMatch(token, env.BUILDER_PUBLISH_TOKEN))) {
-    return json({ error: "Builder credentials required." }, 401);
-  }
-
-  let incoming;
-  try {
-    const text = await request.text();
-    if (text.length > 400_000) return json({ error: "The notes are too large." }, 413);
-    const input = JSON.parse(text);
-    incoming = validateCollection({ sermons: [{ ...input, status: "published" }] }).sermons[0];
-    if (!incoming || !/^builder-[0-9a-f-]{36}-\d{4}-\d{2}-\d{2}$/.test(incoming.id) ||
-      !incoming.id.endsWith(`-${incoming.date}`) || !incoming.content?.ops.length) {
-      return json({ error: "A Builder sermon and an outline are required." }, 400);
-    }
-  } catch {
-    return json({ error: "Invalid sermon notes." }, 400);
-  }
-
-  const receipt = { id: incoming.id, url: new URL(`/sermons/${incoming.id}`, request.url).href };
-  try {
-    const store = storeFor(env);
-    const collection = await store.list();
-    const existing = collection.sermons.find(sermon => sermon.id === incoming.id);
-    if (existing && JSON.stringify(existing) === JSON.stringify(incoming)) return json(receipt);
-    if (existing || collection.sermons.some(sermon => sermon.date === incoming.date)) {
-      return json({ error: "This sermon or date already exists." }, 409);
-    }
-    await store.save([...collection.sermons, incoming], collection.revision);
-    return json(receipt, 201);
-  } catch (error) {
-    if (error instanceof ConflictError) return json({ error: "Concurrent save. Retry." }, 409);
-    console.error(error);
-    return json({ error: "Could not publish the sermon." }, 500);
   }
 }

@@ -26,6 +26,7 @@ it("updates the loading title and existing Open Graph title when the sermon load
   document.title = fallback;
 
   const [sermon] = demoSermons();
+  if (!sermon) throw new Error("Expected a demo sermon.");
   vi.spyOn(Route, "useParams").mockReturnValue({ sermonId: sermon.id });
   const SermonPage = Route.options.component!;
   useSermons.mockReturnValue({ isPending: true });

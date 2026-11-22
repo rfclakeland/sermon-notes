@@ -1,6 +1,7 @@
 # Copy to .dev.vars for local Wrangler. Never commit real values.
-# Set the same names on the preview Worker with `wrangler secret put`.
+# Set AUTH_SECRET, STAFF_PASSWORD, and BUILDER_PUBLISH_TOKEN with `wrangler secret put`.
 AUTH_SECRET=
 STAFF_PASSWORD=
 
 BUILDER_PUBLISH_TOKEN=
+PUBLIC_ORIGIN=

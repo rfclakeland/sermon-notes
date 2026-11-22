@@ -37,7 +37,7 @@ import { docxToHtml, resizeCover } from "@/lib/sermon/files";
 import { useSermons } from "@/lib/sermon/queries";
 import { ConflictError, sermonService } from "@/lib/sermon/service";
 import { deltaToTiptap, tiptapToDelta } from "@/lib/sermon/tiptap-adapter";
-import type { Sermon, SermonStatus } from "@/lib/sermon/types";
+import type { Sermon, SermonDoc, SermonStatus } from "@/lib/sermon/types";
 import {
   looksLikeEmbeddedVerse,
   SERMON_ID_RE,
@@ -238,7 +238,11 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
       );
       return null;
     }
-    const doc = tiptapToDelta(editor.getJSON());
+    // Preserve the stored delta when staff only edit metadata. Tiptap can resegment text runs.
+    const doc =
+      original?.content && docJson === baseDoc.current
+        ? (JSON.parse(docJson) as SermonDoc)
+        : tiptapToDelta(editor.getJSON());
     const record: Sermon = {
       ...(original ?? { context: "", lead: "", points: [] }),
       id: meta.id,

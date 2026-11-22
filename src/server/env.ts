@@ -25,6 +25,7 @@ export type WorkerEnv = {
   AUTH_SECRET?: string;
   STAFF_PASSWORD?: string;
   BUILDER_PUBLISH_TOKEN?: string;
+  PUBLIC_ORIGIN?: string;
 };
 
 function isD1(value: unknown): value is D1Like {
@@ -35,7 +36,10 @@ function isR2(value: unknown): value is R2Like {
   return !!value && typeof value === "object" && "put" in value && "get" in value;
 }
 
-function bindingString(raw: Record<string, unknown>, key: "AUTH_SECRET" | "STAFF_PASSWORD" | "BUILDER_PUBLISH_TOKEN") {
+function bindingString(
+  raw: Record<string, unknown>,
+  key: "AUTH_SECRET" | "STAFF_PASSWORD" | "BUILDER_PUBLISH_TOKEN" | "PUBLIC_ORIGIN",
+) {
   const bound = raw[key];
   if (typeof bound === "string" && bound.length > 0) return bound;
   if (
@@ -59,6 +63,7 @@ export function readEnv(request?: Request): WorkerEnv {
   const auth = bindingString(raw, "AUTH_SECRET");
   const password = bindingString(raw, "STAFF_PASSWORD");
   const publishToken = bindingString(raw, "BUILDER_PUBLISH_TOKEN");
+  const publicOrigin = bindingString(raw, "PUBLIC_ORIGIN");
   const db = raw["DB"];
   const covers = raw["COVERS"];
   return {
@@ -67,5 +72,6 @@ export function readEnv(request?: Request): WorkerEnv {
     ...(auth ? { AUTH_SECRET: auth } : {}),
     ...(password ? { STAFF_PASSWORD: password } : {}),
     ...(publishToken ? { BUILDER_PUBLISH_TOKEN: publishToken } : {}),
+    ...(publicOrigin ? { PUBLIC_ORIGIN: publicOrigin } : {}),
   };
 }
