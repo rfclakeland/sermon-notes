@@ -709,6 +709,89 @@
   padding: 16px 18px;
 }
 
+.rn .hero.typographic {
+  height: auto;
+  background: var(--parchment);
+  color: var(--ink);
+}
+.rn .hero.typographic::after,
+.rn .tile.typographic::after {
+  display: none;
+}
+.rn .hero.typographic .wrap {
+  height: auto;
+  padding-block: clamp(24px, 5vw, 64px);
+}
+.rn .hero.typographic h1 {
+  text-shadow: none;
+}
+.rn .hero.typographic .eyebrow,
+.rn .hero.typographic .byline a,
+.rn .tile.typographic .ref,
+.rn .tile.typographic .tile-series {
+  color: var(--gold-text);
+}
+.rn .hero.typographic .eyebrow::before,
+.rn .hero.typographic .byline .sep {
+  background: var(--gold);
+}
+.rn .hero.typographic .byline,
+.rn .tile.typographic .date {
+  color: var(--ink);
+}
+.rn .hero.typographic .byline a {
+  border-color: var(--rule-gold);
+}
+.rn .tile.typographic {
+  aspect-ratio: auto;
+  background: var(--paper);
+  color: var(--ink);
+  border-top: 1px solid var(--rule-gold);
+}
+.rn .tile.typographic:hover,
+.rn .tile.typographic:focus-within {
+  background: var(--parchment);
+}
+.rn .tile.typographic .tile-link:focus-visible {
+  outline-color: var(--rule-gold);
+}
+.rn .tile.typographic .cap {
+  position: relative;
+  overflow-wrap: anywhere;
+}
+.rn .tile.typographic .badge {
+  position: static;
+  margin: 12px 0 0 16px;
+  padding: 3px 8px;
+  background: var(--parchment);
+  border-color: var(--rule-gold);
+  backdrop-filter: none;
+  color: var(--ink);
+}
+.rn .tile.typographic .badge::before,
+.rn .loading-lines span {
+  background: var(--gold);
+}
+.rn .loading-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.rn .loading-lines span {
+  display: block;
+  width: min(8rem, 40%);
+  height: 0.65rem;
+  opacity: 0.25;
+}
+.rn .loading-lines span:nth-child(2) {
+  width: min(32rem, 80%);
+  height: 1.6rem;
+}
+.rn .loading-lines span:nth-child(3) {
+  width: min(18rem, 60%);
+}
+
 .rn .page-head {
   padding: clamp(44px, 7vw, 88px) 0 28px;
   border-bottom: 2px solid var(--ink);
@@ -1192,6 +1275,34 @@
   .rn .strip .tile:nth-child(n + 2) {
     display: none;
   }
+  .rn .archive-head {
+    padding: 24px 0 14px;
+    margin-bottom: 10px;
+  }
+  .rn .archive-head .eyebrow {
+    margin-bottom: 8px;
+  }
+  .rn .archive-head .lede {
+    margin-top: 10px;
+    font-size: 17px;
+    line-height: 1.4;
+  }
+  .rn .finder {
+    gap: 4px 12px;
+    margin-bottom: 12px;
+  }
+  .rn .finder .search {
+    min-height: 44px;
+  }
+  .rn .finder .series-filter select {
+    min-height: 44px;
+  }
+  .rn .finder ~ .grid2 {
+    gap: 12px;
+  }
+  .rn .tile.typographic .cap {
+    padding: 14px 16px;
+  }
   .rn .page-head.split,
   .rn .entry {
     grid-template-columns: 1fr;
@@ -1258,7 +1369,8 @@
   .rn .chips {
     display: none !important;
   }
-  .rn .hero {
+  .rn .hero,
+  .rn .hero.typographic {
     height: auto;
     color: var(--ink);
     background: none;

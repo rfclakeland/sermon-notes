@@ -120,7 +120,7 @@ export function SermonReader({
 
   return (
     <article aria-labelledby="sermon-title">
-      <section className="hero">
+      <section className={sermon.cover ? "hero" : "hero typographic"}>
         {sermon.cover ? (
           <img src={sermon.cover} alt="" width={1600} height={1000} fetchPriority="high" />
         ) : null}

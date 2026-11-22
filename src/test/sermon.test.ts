@@ -7,7 +7,15 @@ import {
   sermonExtensions,
 } from "@/components/admin/editor/extensions";
 import { demoSermons } from "@/lib/sermon/demo-data";
-import { getSermonDoc, legacyToDelta, listBlanks, sanitizeDoc } from "@/lib/sermon/delta";
+import {
+  docToPlainText,
+  getSermonDoc,
+  groupLines,
+  legacyToDelta,
+  listBlanks,
+  opsToLines,
+  sanitizeDoc,
+} from "@/lib/sermon/delta";
 import { draftKey } from "@/lib/sermon/drafts";
 import { buildNotesText, mailtoHref } from "@/lib/sermon/export";
 import { matchesSermon, sermonFromHash } from "@/lib/sermon/search";
@@ -162,5 +170,40 @@ describe("editor blanks", () => {
     removeBlank(ed, 1);
     expect(ed.getText()).toBe("Jesus heals");
     ed.destroy();
+  });
+});
+
+describe("imported outline lists", () => {
+  it("skips empty list lines in grouped outlines and plain-text exports", () => {
+    const doc: SermonDoc = {
+      ops: [
+        { insert: "God " },
+        { insert: { blank: { id: "shepherd", answer: "is", multiline: false } } },
+        { insert: " shepherding me." },
+        { insert: "\n", attributes: { list: "ordered" } },
+        { insert: "\nHebrew “Yahweh” …", attributes: { list: "ordered" } },
+        { insert: "\n", attributes: { list: "ordered" } },
+      ],
+    };
+    const lines = opsToLines(doc.ops);
+
+    expect(groupLines(lines)).toEqual([
+      { type: "list", ordered: true, items: [lines[0], lines[2]] },
+    ]);
+    expect(docToPlainText(doc, () => "is")).toBe("1. God is shepherding me.\n2. Hebrew “Yahweh” …");
+  });
+
+  it("drops whitespace-only lists but keeps items made entirely of a blank", () => {
+    const doc: SermonDoc = {
+      ops: [
+        { insert: " \t\n", attributes: { list: "bullet" } },
+        { insert: { blank: { id: "response", answer: "", multiline: false } } },
+        { insert: "\n", attributes: { list: "ordered" } },
+      ],
+    };
+    const lines = opsToLines(doc.ops);
+
+    expect(groupLines(lines)).toEqual([{ type: "list", ordered: true, items: [lines[1]] }]);
+    expect(docToPlainText(doc, () => "")).toBe("1. ________");
   });
 });

@@ -2,7 +2,15 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export function ReaderSkeleton() {
-  return <div className="hero" aria-busy="true" aria-label="Loading sermon" />;
+  return (
+    <div className="hero typographic" role="status" aria-busy="true" aria-label="Loading sermon">
+      <div className="wrap loading-lines" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+    </div>
+  );
 }
 
 export function StateMessage({

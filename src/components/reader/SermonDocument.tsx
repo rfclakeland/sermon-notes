@@ -1,5 +1,12 @@
 import { Fragment, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
-import { groupLines, listBlanks, opsToLines, type Line, type Segment } from "@/lib/sermon/delta";
+import {
+  groupLines,
+  isEmptyLine,
+  listBlanks,
+  opsToLines,
+  type Line,
+  type Segment,
+} from "@/lib/sermon/delta";
 import type { BlankData, SermonDoc } from "@/lib/sermon/types";
 
 type Props = {
@@ -172,6 +179,19 @@ export function SermonDocument({ doc, values, revealed, onChange }: Props) {
   const extra = intro.slice(context && (lead || points) ? 2 : 1);
   const leadEnds = lead ? /[.?!…]$/.test(lineText(lead).trim()) : true;
 
+  const renderList = (lines: Line[], ordered: boolean, key?: number) => {
+    const items = lines.filter((line) => !isEmptyLine(line));
+    if (!items.length) return null;
+    const List = ordered ? "ol" : "ul";
+    return (
+      <List key={key} className={ordered ? "points" : undefined}>
+        {items.map((line, index) => (
+          <li key={index}>{inline(line)}</li>
+        ))}
+      </List>
+    );
+  };
+
   const generic = (block: (typeof blocks)[number], key: number) => {
     if (block.type === "line") {
       const style: CSSProperties = { textAlign: block.line.attrs.align };
@@ -208,15 +228,7 @@ export function SermonDocument({ doc, values, revealed, onChange }: Props) {
         </blockquote>
       );
     }
-    const List = block.ordered ? "ol" : "ul";
-    const className = block.ordered ? "points" : undefined;
-    return (
-      <List key={key} className={className}>
-        {block.items.map((line, index) => (
-          <li key={index}>{inline(line)}</li>
-        ))}
-      </List>
-    );
+    return renderList(block.items, block.ordered, key);
   };
 
   return (
@@ -232,13 +244,7 @@ export function SermonDocument({ doc, values, revealed, onChange }: Props) {
       {extra.map((line, index) => (
         <p key={`extra-${index}`}>{inline(line)}</p>
       ))}
-      {points ? (
-        <ol className="points">
-          {points.map((line, index) => (
-            <li key={index}>{inline(line)}</li>
-          ))}
-        </ol>
-      ) : null}
+      {points ? renderList(points, true) : null}
       {rest.map((block, index) => generic(block, index))}
     </div>
   );

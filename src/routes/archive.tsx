@@ -67,7 +67,7 @@ function Archive() {
   return (
     <PublicShell>
       <div className="wrap">
-        <header className="page-head">
+        <header className="page-head archive-head">
           <p className="eyebrow">{query.data ? `${results.length} sermons` : "Sermons"}</p>
           <h1>{series ?? "Past sermons"}</h1>
           <p className="lede">
@@ -130,7 +130,13 @@ function Archive() {
         {query.isPending ? (
           <div className="grid2" aria-busy="true" aria-label="Loading sermons">
             {[0, 1, 2, 3].map((item) => (
-              <div key={item} className="tile" />
+              <div key={item} className="tile typographic" aria-hidden="true">
+                <div className="cap loading-lines">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </div>
             ))}
           </div>
         ) : query.isError ? (

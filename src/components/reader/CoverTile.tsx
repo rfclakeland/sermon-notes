@@ -16,7 +16,7 @@ export function CoverTile({ sermon, small = false }: { sermon: Sermon; small?: b
   const notes = filledCount(sermon);
   const titleId = useId();
   return (
-    <div className={small ? "tile sm" : "tile"}>
+    <div className={`tile${small ? " sm" : ""}${sermon.cover ? "" : " typographic"}`}>
       <Link
         to="/sermons/$sermonId"
         params={{ sermonId: sermon.id }}

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicShell } from "@/components/layout/SiteHeader";
 import { MoreSermons } from "@/components/reader/MoreSermons";
@@ -29,6 +30,26 @@ function SermonPage() {
   const { sermonId } = Route.useParams();
   const q = useSermons("public");
   const sermon = q.data?.sermons.find((s) => s.id === sermonId);
+  const title =
+    !q.isPending && !q.isError && sermon ? `${sermon.title} — Restoration Notes` : undefined;
+
+  useEffect(() => {
+    if (!title) return;
+
+    const previousTitle = document.title;
+    const ogTitle = document.querySelector<HTMLMetaElement>('meta[property="og:title"]');
+    const previousOgTitle = ogTitle?.content;
+    document.title = title;
+    if (ogTitle) ogTitle.content = title;
+
+    return () => {
+      if (document.title === title) document.title = previousTitle;
+      if (ogTitle?.content === title && previousOgTitle !== undefined) {
+        ogTitle.content = previousOgTitle;
+      }
+    };
+  }, [title]);
+
   const latestId = q.data?.sermons[0]?.id;
   return (
     <PublicShell>
