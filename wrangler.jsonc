@@ -9,6 +9,10 @@
     }
   },
   // Preview Worker only. Do not add a routes or workers custom-domain entry.
+  // Production sets PUBLIC_ORIGIN to https://notes.rfclakeland.com.
+  "vars": {
+    "PUBLIC_ORIGIN": "https://restoration-notes.media-ff8.workers.dev"
+  },
   "d1_databases": [
     {
       "binding": "DB",

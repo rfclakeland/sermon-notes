@@ -2,16 +2,10 @@ import { ConflictError } from "@/lib/sermon/service";
 import { publicSermons } from "@/lib/sermon/public";
 import { validateCollection } from "@/lib/sermon/validate";
 import { clearSessionCookie, isStaff, passwordsMatch, sessionCookie, signSession } from "./auth";
-import { readEnv, type WorkerEnv } from "./env";
-import { createD1Store, devMemoryStore, type SermonStore } from "./store";
+import { readEnv } from "./env";
+import { storeFor } from "./store";
 
 const COVER_MAX = 2 * 1024 * 1024;
-
-function storeFor(env: WorkerEnv): SermonStore {
-  if (env.DB) return createD1Store(env.DB, env.COVERS);
-  if (import.meta.env.DEV) return devMemoryStore();
-  throw new Error("Database is not configured.");
-}
 
 function json(body: unknown, status = 200, headers?: HeadersInit) {
   return Response.json(body, headers ? { status, headers } : { status });
