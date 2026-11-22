@@ -12,7 +12,7 @@ import {
   formatDate,
   ORPHAN_NOTICE,
   orphanAnswers,
-  SAMPLE_NOTICE,
+  PREVIEW_NOTICE,
   type OrphanReason,
 } from "@/lib/sermon/export";
 import { fillOutline, loadNoteContext, type NoteContext } from "@/lib/sermon/note-context";
@@ -129,7 +129,7 @@ function MyNotes() {
             <h1>My notes</h1>
             <p className="lede">
               Notes live on this device only — not linked to an account and not on your other
-              devices. Download a journal or backup to keep a copy. {SAMPLE_NOTICE}
+              devices. Download a journal or backup to keep a copy. {PREVIEW_NOTICE}
             </p>
           </div>
           <div className="quiet-acts">

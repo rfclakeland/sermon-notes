@@ -633,12 +633,22 @@
   inset: 0;
   background: linear-gradient(to top, rgba(10, 11, 14, 0.92) 0%, rgba(10, 11, 14, 0.6) 34%, rgba(10, 11, 14, 0.08) 68%);
 }
+.rn .tile .tile-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.rn .tile .tile-link:focus-visible {
+  outline: 2px solid var(--gold-light);
+  outline-offset: -3px;
+}
 .rn .tile .cap {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1;
+  z-index: 2;
+  pointer-events: none;
   padding: 22px 24px;
 }
 .rn .tile .ref {
@@ -661,11 +671,19 @@
   font-size: 14px;
   color: var(--on-dark-muted);
 }
+.rn .tile .tile-series {
+  pointer-events: auto;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+  overflow-wrap: anywhere;
+}
 .rn .tile .badge {
   position: absolute;
   z-index: 1;
   top: 16px;
   left: 16px;
+  pointer-events: none;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -760,6 +778,20 @@
 }
 .rn .search:focus {
   border-bottom: 2px solid var(--rule-gold);
+}
+.rn .series-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.rn .series-filter select {
+  min-width: 0;
+  max-width: min(18rem, 100%);
+  min-height: 44px;
+  font: inherit;
 }
 .rn .filters {
   display: flex;

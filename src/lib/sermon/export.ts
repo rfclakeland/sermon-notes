@@ -4,8 +4,7 @@ import type { Sermon, VisitorDraft } from "./types";
 
 export const CHURCH_NAME = "Restoration Fellowship Church of Lakeland";
 
-export const SAMPLE_NOTICE =
-  "Sample outlines for this preview — not recordings of Restoration Fellowship services.";
+export const PREVIEW_NOTICE = "This is a preview of Restoration Fellowship sermon outlines.";
 
 export function formatDate(iso: string, style: "long" | "short" = "long") {
   const [y, m, d] = iso.split("-").map(Number);

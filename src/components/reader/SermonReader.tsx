@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useVisitorDraft, type DraftStatus } from "@/hooks/use-visitor-draft";
-import { isSampleSermon } from "@/lib/sermon/sample";
 import { getSermonDoc, listBlanks } from "@/lib/sermon/delta";
 import {
   bibleGatewayUrl,
@@ -139,6 +138,14 @@ export function SermonReader({
                 <span className="sr-only"> (opens Bible Gateway)</span>
               </a>
             ) : null}
+            {sermon.series ? (
+              <>
+                {sermon.speaker || passage ? <span className="sep" aria-hidden="true" /> : null}
+                <Link to="/archive" search={{ series: sermon.series }}>
+                  {sermon.series}
+                </Link>
+              </>
+            ) : null}
           </div>
         </div>
       </section>
@@ -244,12 +251,6 @@ export function SermonReader({
                 {formatDate(sermon.date)}
                 <br />
                 {sermon.speaker}
-                {isSampleSermon(sermon.id) ? (
-                  <>
-                    <br />
-                    Sample outline
-                  </>
-                ) : null}
               </div>
             </aside>
             <div>

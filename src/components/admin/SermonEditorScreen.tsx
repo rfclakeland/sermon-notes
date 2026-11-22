@@ -38,7 +38,12 @@ import { useSermons } from "@/lib/sermon/queries";
 import { ConflictError, sermonService } from "@/lib/sermon/service";
 import { deltaToTiptap, tiptapToDelta } from "@/lib/sermon/tiptap-adapter";
 import type { Sermon, SermonStatus } from "@/lib/sermon/types";
-import { looksLikeEmbeddedVerse, SERMON_ID_RE, slugify } from "@/lib/sermon/validate";
+import {
+  looksLikeEmbeddedVerse,
+  SERMON_ID_RE,
+  SERIES_MAX_LENGTH,
+  slugify,
+} from "@/lib/sermon/validate";
 import { cn } from "@/lib/utils";
 import { AdminTopBar } from "./AdminTopBar";
 import { EditorToolbar } from "./editor/EditorToolbar";
@@ -55,6 +60,7 @@ type Meta = {
   title: string;
   date: string;
   speaker: string;
+  series: string;
   scripture: string;
   reference: string;
   cover: string;
@@ -118,6 +124,7 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
       title: original?.title ?? "",
       date: original?.date ?? todayIso(),
       speaker: original?.speaker ?? "",
+      series: original?.series ?? "",
       scripture: original?.scripture ?? "",
       reference: original?.reference ?? "",
       cover: original?.cover ?? "",
@@ -243,6 +250,9 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
       status: meta.status,
       content: doc,
     };
+    const series = meta.series.trim();
+    if (series) record.series = series;
+    else delete record.series;
     if (meta.cover) record.cover = meta.cover;
     else delete record.cover;
     const sermons = latest.sermons.some((s) => s.id === record.id)
@@ -588,6 +598,15 @@ function EditorInner({ original, onSignOut }: { original: Sermon | null; onSignO
                   value={meta.speaker}
                   onChange={(e) => set("speaker")(e.target.value)}
                   placeholder="Pastor"
+                />
+              </label>
+              <label className={label}>
+                Series (optional)
+                <input
+                  className={field}
+                  value={meta.series}
+                  onChange={(e) => set("series")(e.target.value)}
+                  maxLength={SERIES_MAX_LENGTH}
                 />
               </label>
               <label className={label}>
